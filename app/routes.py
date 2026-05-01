@@ -21,17 +21,17 @@ def handle_rate_limit(e):
     return jsonify({"error": "too many requests"}), 429
 
 
-@bp.route("/healthz")
+@bp.route("/healthz", methods=["GET"])
 def healthz():
     return jsonify({"status": "ok", "time": int(time.time())})
 
 
-@bp.route("/")
+@bp.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
 
 
-@bp.route("/s/<secret_id>")
+@bp.route("/s/<secret_id>", methods=["GET"])
 def view_secret(secret_id):
     return render_template("view.html", secret_id=secret_id)
 
