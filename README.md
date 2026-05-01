@@ -21,3 +21,7 @@ Existe também um modo senha: em vez da chave no link, o remetente define uma se
 ## Status
 
 Em desenvolvimento. Acompanhe o progresso pelas [milestones](https://github.com/NatanRigailo/vanishd/milestones) e [issues](https://github.com/NatanRigailo/vanishd/issues).
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
