@@ -13,6 +13,7 @@ log = logging.getLogger(__name__)
 def create_app():
     app = Flask(__name__)
     app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(32).hex()
+    app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_CONTENT_LENGTH", 65536))
 
     _configure_logging()
     limiter.init_app(app)

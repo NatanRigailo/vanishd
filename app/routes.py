@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import time
 import uuid
 
@@ -13,12 +14,22 @@ log = logging.getLogger(__name__)
 bp = Blueprint("main", __name__)
 
 MAX_TTL = int(os.environ.get("MAX_TTL_SECONDS", 604800))
+RATE_LIMIT_POST = os.environ.get("RATE_LIMIT_POST_PER_MINUTE", "10")
+
+
+def _sanitize(value):
+    return re.sub(r"[\r\n\t\x00-\x1f\x7f]", "_", str(value))
 
 
 @bp.app_errorhandler(RateLimitExceeded)
 def handle_rate_limit(e):
-    log.warning("rate_limit_exceeded ip=%s", request.remote_addr)
+    log.warning("rate_limit_exceeded ip=%s", _sanitize(request.remote_addr))
     return jsonify({"error": "too many requests"}), 429
+
+
+@bp.app_errorhandler(413)
+def handle_too_large(e):
+    return jsonify({"error": "request too large"}), 413
 
 
 @bp.route("/healthz", methods=["GET"])
@@ -37,6 +48,7 @@ def view_secret(secret_id):
 
 
 @bp.route("/api/secrets", methods=["POST"])
+@limiter.limit(f"{RATE_LIMIT_POST}/minute")
 def create_secret():
     data = request.get_json(silent=True) or {}
     ciphertext = (data.get("ciphertext") or "").strip()
@@ -86,8 +98,8 @@ def read_secret(secret_id):
         conn.close()
 
     if row is None:
-        log.warning("secret_not_found id=%s ip=%s", secret_id, request.remote_addr)
+        log.warning("secret_not_found id=%s ip=%s", _sanitize(secret_id), _sanitize(request.remote_addr))
         return jsonify({"error": "secret not found or expired"}), 404
 
-    log.info("secret_read id=%s ip=%s", secret_id, request.remote_addr)
+    log.info("secret_read id=%s ip=%s", _sanitize(secret_id), _sanitize(request.remote_addr))
     return jsonify({"ciphertext": row["ciphertext"], "iv": row["iv"], "salt": row["salt"]})
