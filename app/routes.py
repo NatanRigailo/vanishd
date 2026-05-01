@@ -4,13 +4,21 @@ import time
 import uuid
 
 from flask import Blueprint, jsonify, render_template, request
+from flask_limiter.errors import RateLimitExceeded
 
+from app import limiter
 from app.db import get_db
 
 log = logging.getLogger(__name__)
 bp = Blueprint("main", __name__)
 
 MAX_TTL = int(os.environ.get("MAX_TTL_SECONDS", 604800))
+
+
+@bp.app_errorhandler(RateLimitExceeded)
+def handle_rate_limit(e):
+    log.warning("rate_limit_exceeded ip=%s", request.remote_addr)
+    return jsonify({"error": "too many requests"}), 429
 
 
 @bp.route("/healthz")
@@ -64,6 +72,7 @@ def create_secret():
 
 
 @bp.route("/api/secrets/<secret_id>", methods=["GET"])
+@limiter.limit(f"{os.environ.get('RATE_LIMIT_PER_MINUTE', '20')}/minute")
 def read_secret(secret_id):
     conn = get_db()
     try:
@@ -77,7 +86,8 @@ def read_secret(secret_id):
         conn.close()
 
     if row is None:
+        log.warning("secret_not_found id=%s ip=%s", secret_id, request.remote_addr)
         return jsonify({"error": "secret not found or expired"}), 404
 
-    log.info("secret_read id=%s", secret_id)
+    log.info("secret_read id=%s ip=%s", secret_id, request.remote_addr)
     return jsonify({"ciphertext": row["ciphertext"], "iv": row["iv"], "salt": row["salt"]})
