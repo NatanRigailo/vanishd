@@ -1,0 +1,13 @@
+services:
+  vanishd:
+    image: ghcr.io/natanrigailo/vanishd:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - vanishd_data:/data
+    env_file:
+      - .env
+
+volumes:
+  vanishd_data:
