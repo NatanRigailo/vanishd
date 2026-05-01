@@ -7,6 +7,13 @@ updates:
     labels:
       - ci
 
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - ci
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
