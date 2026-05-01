@@ -1,10 +1,83 @@
+import logging
+import os
 import time
+import uuid
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, render_template, request
 
+from app.db import get_db
+
+log = logging.getLogger(__name__)
 bp = Blueprint("main", __name__)
+
+MAX_TTL = int(os.environ.get("MAX_TTL_SECONDS", 604800))
 
 
 @bp.route("/healthz")
 def healthz():
     return jsonify({"status": "ok", "time": int(time.time())})
+
+
+@bp.route("/")
+def index():
+    return render_template("index.html")
+
+
+@bp.route("/s/<secret_id>")
+def view_secret(secret_id):
+    return render_template("view.html", secret_id=secret_id)
+
+
+@bp.route("/api/secrets", methods=["POST"])
+def create_secret():
+    data = request.get_json(silent=True) or {}
+    ciphertext = (data.get("ciphertext") or "").strip()
+    iv = (data.get("iv") or "").strip()
+    salt = (data.get("salt") or "").strip() or None
+
+    try:
+        ttl = int(data.get("ttl", 86400))
+    except (ValueError, TypeError):
+        return jsonify({"error": "ttl must be an integer"}), 400
+
+    if not ciphertext or not iv:
+        return jsonify({"error": "ciphertext and iv are required"}), 400
+    if not (1 <= ttl <= MAX_TTL):
+        return jsonify({"error": f"ttl must be between 1 and {MAX_TTL}"}), 400
+
+    secret_id = str(uuid.uuid4())
+    now = int(time.time())
+
+    conn = get_db()
+    try:
+        conn.execute(
+            "INSERT INTO secrets (id, ciphertext, iv, salt, created_at, expires_at) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (secret_id, ciphertext, iv, salt, now, now + ttl),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    log.info("secret_created id=%s ttl=%d", secret_id, ttl)
+    return jsonify({"id": secret_id}), 201
+
+
+@bp.route("/api/secrets/<secret_id>", methods=["GET"])
+def read_secret(secret_id):
+    conn = get_db()
+    try:
+        row = conn.execute(
+            "DELETE FROM secrets WHERE id = ? AND expires_at > ? "
+            "RETURNING ciphertext, iv, salt",
+            (secret_id, int(time.time())),
+        ).fetchone()
+        conn.commit()
+    finally:
+        conn.close()
+
+    if row is None:
+        return jsonify({"error": "secret not found or expired"}), 404
+
+    log.info("secret_read id=%s", secret_id)
+    return jsonify({"ciphertext": row["ciphertext"], "iv": row["iv"], "salt": row["salt"]})
