@@ -28,7 +28,7 @@ jobs:
         run: flake8 app/ --max-line-length=100
 
       - name: hadolint
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: Dockerfile
 
