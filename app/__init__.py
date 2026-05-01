@@ -20,6 +20,13 @@ def create_app():
     from app.db import init_db
     init_db()
 
+    log.info(
+        "startup max_ttl=%s rate_limit=%s cleanup_interval=%s",
+        os.environ.get("MAX_TTL_SECONDS", 604800),
+        os.environ.get("RATE_LIMIT_PER_MINUTE", 20),
+        os.environ.get("CLEANUP_INTERVAL_SECONDS", 3600),
+    )
+
     from app.cleanup import start_cleanup_thread
     start_cleanup_thread()
 
