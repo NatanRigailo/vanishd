@@ -1,3 +1,5 @@
+import VanishCrypto from '/static/crypto.js';
+
 const secretId = document.getElementById('app').dataset.secretId;
 const keyB64 = location.hash.slice(1);
 const panels = ['loading', 'password-section', 'success-section', 'error-section'];
@@ -43,14 +45,14 @@ async function decryptWithPassword(password) {
 }
 
 if (keyB64) {
-  decryptWithKey();
+  await decryptWithKey();
 } else {
   show('password-section');
-  document.getElementById('decrypt-btn').addEventListener('click', () => {
+  document.getElementById('decrypt-btn').addEventListener('click', async () => {
     const password = document.getElementById('password').value;
     if (!password) { alert('Digite a senha.'); return; }
     show('loading');
-    decryptWithPassword(password);
+    await decryptWithPassword(password);
   });
   document.getElementById('password').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('decrypt-btn').click();
