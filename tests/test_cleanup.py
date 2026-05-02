@@ -1,6 +1,7 @@
 import time
 
 import app.db as db
+from app.cleanup import cleanup_once
 
 
 def test_cleanup_deletes_expired_and_keeps_active(app):
@@ -27,3 +28,22 @@ def test_cleanup_deletes_expired_and_keeps_active(app):
 
     assert "expired" not in ids
     assert "active" in ids
+
+
+def test_cleanup_once(app):
+    now = int(time.time())
+    conn = db.get_db()
+    conn.execute(
+        "INSERT INTO secrets (id, ciphertext, iv, salt, created_at, expires_at) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
+        ("to-clean", "ct", "iv", None, now - 100, now - 1),
+    )
+    conn.commit()
+    conn.close()
+
+    cleanup_once()
+
+    conn = db.get_db()
+    row = conn.execute("SELECT id FROM secrets WHERE id = 'to-clean'").fetchone()
+    conn.close()
+    assert row is None
