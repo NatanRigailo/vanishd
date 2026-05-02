@@ -199,14 +199,21 @@ jobs:
               -t http://localhost:8080 \
               -c /zap/rules.tsv \
               -r /zap/wrk/report.html \
+              -w /zap/wrk/report.md \
               -I
+
+      - name: ZAP report summary
+        if: always()
+        run: cat zap-output/report.md || true
 
       - name: Upload ZAP report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
-          path: zap-output/report.html
+          path: |
+            zap-output/report.html
+            zap-output/report.md
 
       - name: Stop app
         if: always()
