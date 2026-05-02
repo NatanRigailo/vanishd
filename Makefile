@@ -2,7 +2,7 @@ IMAGE_NAME ?= vanishd
 PORT       ?= 8080
 DATA_VOL   ?= vanishd_data
 
-.PHONY: up down build lint clean logs shell
+.PHONY: up down build lint clean logs shell dev
 
 build:
 	docker build -t $(IMAGE_NAME) .
@@ -20,6 +20,10 @@ down:
 clean: down
 	docker volume rm $(DATA_VOL) || true
 	docker rmi $(IMAGE_NAME) || true
+
+dev:
+	pip install --user --break-system-packages pre-commit || pip install pre-commit
+	pre-commit install 2>/dev/null || ~/.local/bin/pre-commit install
 
 lint:
 	flake8 app/
