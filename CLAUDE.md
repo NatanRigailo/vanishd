@@ -125,7 +125,7 @@ As milestones e issues são gerenciadas no GitHub: https://github.com/NatanRigai
 
 ## Estado atual
 
-**Versão:** v1.0.0 ✅
+**Versão:** v1.1.0 ✅
 
 **Milestones concluídas:**
 - ✅ v0.1 — Fundação: estrutura, Dockerfile multi-stage non-root, Flask skeleton, SQLite schema
@@ -136,9 +136,12 @@ As milestones e issues são gerenciadas no GitHub: https://github.com/NatanRigai
 - ✅ v0.6 — Quality & Dev Experience: pre-commit hooks, actionlint, JS code smells, testes (97% coverage), /healthz DB check, rate limit POST, log injection sanitization
 - ✅ v0.7 — Production Ready: suporte PostgreSQL via DATABASE_URL (_Conn wrapper, psycopg2-binary), pip-audit, gitleaks, fix libpq5 runtime (Render+Supabase via pooler IPv4 port 6543)
 - ✅ v1.0 — UX & Pipeline completo: design system, favicon, fontes locais, páginas de erro customizadas (404/500/413/429), histórico localStorage com badges de estado, acessibilidade (fieldset+legend), DAST OWASP ZAP baseline no CI, CSRF via Content-Type enforcement (SonarCloud S4502), testes JS com Jest + coverage lcov
+- ✅ v1.1 — UX Polish: botão de revelação — secret consumido apenas ao confirmar clique (modo link), view.js refatorado e testado (15 testes, 100% coverage)
 
 **Próximas milestones:**
-- v1.1 — UX Polish: botão de revelação (expira só ao confirmar leitura) — issue #57
+- v1.2 — Deploy Options: Docker Compose (#86) + Helm chart (#87)
+- v1.3 — Observability: /metrics Prometheus (#88) + load test k6 (#89)
+- v1.4 — Notifications: webhook on read Discord/Slack/Teams (#90)
 
 **Lições aprendidas:**
 - `build-and-scan` precisa de `if: always() && ... (sast.result == 'success' || sast.result == 'skipped')` para funcionar em PRs do Dependabot
