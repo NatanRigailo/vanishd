@@ -125,7 +125,7 @@ As milestones e issues são gerenciadas no GitHub: https://github.com/NatanRigai
 
 ## Estado atual
 
-**Versão:** v0.6 em andamento
+**Versão:** v1.0 em andamento
 
 **Milestones concluídas:**
 - ✅ v0.1 — Fundação: estrutura, Dockerfile multi-stage non-root, Flask skeleton, SQLite schema
@@ -133,28 +133,29 @@ As milestones e issues são gerenciadas no GitHub: https://github.com/NatanRigai
 - ✅ v0.3 — CI Pipeline: lint (flake8+hadolint), SAST (bandit), build+Trivy, SonarCloud, Dependabot, CODEOWNERS
 - ✅ v0.4 — Security Hardening: rate limiting, secure headers + CSP sem unsafe-inline, cleanup job, logging seguro
 - ✅ v0.5 — Release & Deploy: auto-tag semver, publish GHCR, deploy Render via webhook, README com badges
-
-**v0.6 — Em andamento:**
-- PR #70 (`fix/post-rate-limit-log-injection`): rate limit POST /api/secrets, MAX_CONTENT_LENGTH, log injection sanitization — fecha #53 e #58
-- Issue #52: /healthz com verificação do banco de dados
-- Issue #45: pre-commit hooks (hadolint, bandit, flake8)
-- Issue #54: actionlint — validação de sintaxe dos workflows
-- Issue #59: code smells JavaScript apontados pelo SonarCloud
-- Issue #47: testes unitários e de integração
+- ✅ v0.6 — Quality & Dev Experience: pre-commit hooks, actionlint, JS code smells, testes (97% coverage), /healthz DB check, rate limit POST, log injection sanitization
+- ✅ v0.7 — Production Ready: suporte PostgreSQL via DATABASE_URL (_Conn wrapper, psycopg2-binary), pip-audit, gitleaks, fix libpq5 runtime (Render+Supabase via pooler IPv4 port 6543)
 
 **Issues avulsas em aberto:**
 - Issue #64: security hotspot CSRF — avaliar proteção CSRF no POST /api/secrets (SonarCloud S4502)
-- Issues #65–69: Dependabot (bumps de Actions e flask-limiter)
+
+**v1.0 — Em andamento:**
+- Issue #49: DAST com OWASP ZAP no pipeline
+- Issue #46: padronizar frontend com design system do portfólio
+- Issue #56: páginas de erro customizadas (404, 500, 413, 429)
+- Issue #55: histórico de secrets criados via localStorage
+- Issue #60: acessibilidade — associar label ao controle de modo na create page
 
 **Próximas milestones:**
-- v0.7 — Production Ready: PostgreSQL/Supabase, pip-audit, gitleaks
-- v1.0 — Security Verified: DAST (OWASP ZAP), design system, páginas de erro, histórico localStorage, acessibilidade
-- v1.1 — UX Polish: botão de revelação (expira só ao confirmar leitura)
+- v1.1 — UX Polish: botão de revelação (expira só ao confirmar leitura) — issue #57
 
-**Lições aprendidas do ciclo v0.1–v0.5:**
+**Lições aprendidas:**
 - `build-and-scan` precisa de `if: always() && ... (sast.result == 'success' || sast.result == 'skipped')` para funcionar em PRs do Dependabot
 - SonarCloud PR decoration exige `pull-requests: write` no job + permissão "Pull requests: Read and write" no GitHub App do SonarCloud
 - CSP sem `unsafe-inline`: mover todo JS inline para arquivos estáticos; passar dados do servidor via `data-*` attributes
+- pytest-cov gera paths absolutos; SonarCloud precisa de `relative_files = True` no `.coveragerc`
+- psycopg2-binary sem wheel para Python 3.14 — builder precisa de `libpq-dev build-essential`; stage final precisa de `libpq5`
+- Supabase no Render: DNS resolve IPv6, Render free tier não tem IPv6 outbound — usar connection pooler (porta 6543, IPv4)
 
 ---
 
