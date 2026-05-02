@@ -202,10 +202,6 @@ jobs:
               -w /zap/wrk/report.md \
               -I
 
-      - name: ZAP report summary
-        if: always()
-        run: cat zap-output/report.md || true
-
       - name: Upload ZAP report
         if: always()
         uses: actions/upload-artifact@v4
