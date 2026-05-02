@@ -156,7 +156,6 @@ jobs:
     if: github.actor != 'dependabot[bot]'
     permissions:
       contents: read
-      issues: write
     steps:
       - uses: actions/checkout@v6
 
@@ -190,12 +189,24 @@ jobs:
           exit 1
 
       - name: ZAP Baseline Scan
-        uses: zaproxy/action-baseline-scan@v0.14.0
+        run: |
+          mkdir -p zap-output
+          docker run --rm --network host \
+            -v "${{ github.workspace }}/.zap/rules.tsv:/zap/rules.tsv:ro" \
+            -v "${{ github.workspace }}/zap-output:/zap/wrk" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+              -t http://localhost:8080 \
+              -c /zap/rules.tsv \
+              -r /zap/wrk/report.html \
+              -I
+
+      - name: Upload ZAP report
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          target: 'http://localhost:8080'
-          rules_file_name: '.zap/rules.tsv'
-          artifact_name: zap-report
-          fail_action: true
+          name: zap-report
+          path: zap-output/report.html
 
       - name: Stop app
         if: always()
