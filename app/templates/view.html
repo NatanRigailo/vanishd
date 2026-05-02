@@ -6,9 +6,18 @@
 
   <div id="app" data-secret-id="{{ secret_id }}" hidden></div>
 
-  <div id="loading">
+  <div id="loading" class="hidden">
     <div class="spinner"></div>
     <p class="text-muted" style="text-align:center">Decifrando...</p>
+  </div>
+
+  <div id="confirm-section">
+    <div class="badge badge-warning">Uso único</div>
+    <p class="text-muted" style="margin-top:1rem;margin-bottom:1.5rem">
+      Este secret será <strong>destruído permanentemente</strong> ao ser revelado.
+      Certifique-se de estar em um ambiente confiável antes de continuar.
+    </p>
+    <button class="btn" id="reveal-btn" type="button">Revelar secret</button>
   </div>
 
   <div id="password-section" class="hidden">
