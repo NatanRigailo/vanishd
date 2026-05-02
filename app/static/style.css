@@ -249,6 +249,66 @@ select { appearance: none; cursor: pointer; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+#history { margin-top: 1.5rem; }
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.history-title {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+#history-list { list-style: none; }
+
+.history-entry {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.history-entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.history-mode,
+.history-date {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+
+.history-url {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  word-break: break-all;
+  margin-bottom: 0.625rem;
+  line-height: 1.5;
+}
+
+.history-actions { display: flex; gap: 0.5rem; }
+
+.btn-sm {
+  width: auto;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.65rem;
+}
+
 .error-page { text-align: center; padding: 1rem 0; }
 
 .error-code {
