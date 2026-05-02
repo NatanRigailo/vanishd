@@ -50,10 +50,13 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - run: pip install bandit
+      - run: pip install bandit pip-audit
 
       - name: bandit
         run: bandit -r app/ -ll
+
+      - name: pip-audit
+        run: pip-audit -r requirements.txt
 
   test:
     name: Test
@@ -78,15 +81,27 @@ jobs:
           name: coverage
           path: coverage.xml
 
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build-and-scan:
     name: Build & Scan
     runs-on: ubuntu-latest
-    needs: [lint, sast, test]
+    needs: [lint, sast, test, secret-scan]
     if: >
       always() &&
       needs.lint.result == 'success' &&
       (needs.sast.result == 'success' || needs.sast.result == 'skipped') &&
-      (needs.test.result == 'success' || needs.test.result == 'skipped')
+      (needs.test.result == 'success' || needs.test.result == 'skipped') &&
+      (needs.secret-scan.result == 'success' || needs.secret-scan.result == 'skipped')
     steps:
       - uses: actions/checkout@v6
 
