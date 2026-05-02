@@ -1,12 +1,12 @@
 const VanishCrypto = (() => {
   function _b64(u8) {
     let s = '';
-    for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]);
+    for (const byte of u8) s += String.fromCodePoint(byte);
     return btoa(s);
   }
 
   function _from64(b64) {
-    return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    return Uint8Array.from(atob(b64), c => c.codePointAt(0));
   }
 
   async function generateKey() {
@@ -61,3 +61,5 @@ const VanishCrypto = (() => {
 
   return { generateKey, exportKey, importKey, deriveKey, encrypt, decrypt, randomSalt, saltToB64: _b64, b64ToBytes: _from64 };
 })();
+
+export default VanishCrypto;

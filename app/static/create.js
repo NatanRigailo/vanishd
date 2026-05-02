@@ -1,3 +1,5 @@
+import VanishCrypto from './crypto.js';
+
 let mode = 'link';
 
 document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -13,7 +15,7 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
   const secret = document.getElementById('secret').value.trim();
   if (!secret) { alert('Digite o secret.'); return; }
 
-  const ttl = parseInt(document.getElementById('ttl').value);
+  const ttl = Number.parseInt(document.getElementById('ttl').value);
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
   btn.textContent = mode === 'password' ? 'Derivando chave...' : 'Cifrando...';
