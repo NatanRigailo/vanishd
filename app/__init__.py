@@ -57,6 +57,7 @@ def _set_security_headers(response):
     response.headers["Referrer-Policy"] = "no-referrer"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
+    response.headers.pop("Server", None)
     return response
 
 
