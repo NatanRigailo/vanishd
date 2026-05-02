@@ -98,4 +98,4 @@ function setup() {
   render();
 }
 
-export default { add, setup, render };
+export default { add, remove, clear, setup, render };
