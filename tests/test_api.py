@@ -120,9 +120,44 @@ def test_413_api_returns_json(app):
     assert r.get_json()["error"] == "request too large"
 
 
+def test_413_page_returns_html(app):
+    app.config["MAX_CONTENT_LENGTH"] = 50
+    with patch("app.routes._wants_json", return_value=False):
+        r = app.test_client().post(
+            "/api/secrets",
+            data=b"x" * 100,
+            content_type="application/json",
+        )
+    assert r.status_code == 413
+    assert b"413" in r.data
+
+
 def test_500_api_returns_json(app):
     app.config["PROPAGATE_EXCEPTIONS"] = False
     with patch("app.routes.get_db", side_effect=RuntimeError("db")):
         r = app.test_client().get("/api/secrets/x")
     assert r.status_code == 500
     assert r.get_json()["error"] == "internal server error"
+
+
+def test_500_page_returns_html(app):
+    app.config["PROPAGATE_EXCEPTIONS"] = False
+    with patch("app.routes._wants_json", return_value=False):
+        with patch("app.routes.get_db", side_effect=RuntimeError("db")):
+            r = app.test_client().get("/api/secrets/x")
+    assert r.status_code == 500
+    assert b"500" in r.data
+
+
+def test_rate_limit_returns_429(tmp_path, monkeypatch):
+    import app.db as _db_module
+    monkeypatch.setattr(_db_module, "DATABASE_PATH", str(tmp_path / "rl.db"))
+    from app import create_app
+    application = create_app()
+    application.config["PROPAGATE_EXCEPTIONS"] = False
+    client = application.test_client()
+    for _ in range(10):
+        client.post("/api/secrets", json={"ciphertext": "x", "iv": "iv", "ttl": 3600})
+    r = client.post("/api/secrets", json={"ciphertext": "x", "iv": "iv", "ttl": 3600})
+    assert r.status_code == 429
+    assert r.get_json()["error"] == "too many requests"

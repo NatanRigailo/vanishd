@@ -28,12 +28,7 @@ def _wants_json():
 @bp.app_errorhandler(RateLimitExceeded)
 def handle_rate_limit(e):
     log.warning("rate_limit_exceeded ip=%s", _sanitize(request.remote_addr))
-    if _wants_json():
-        return jsonify({"error": "too many requests"}), 429
-    return render_template(
-        "error.html", code=429,
-        message="Muitas requisições. Aguarde um momento e tente novamente."
-    ), 429
+    return jsonify({"error": "too many requests"}), 429
 
 
 @bp.app_errorhandler(413)
