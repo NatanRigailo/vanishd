@@ -232,6 +232,12 @@ select { appearance: none; cursor: pointer; }
   border: 1px solid rgba(248, 113, 113, 0.2);
 }
 
+.badge-warning {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
 .text-muted { color: var(--muted); font-size: 0.8rem; line-height: 1.6; }
 .mt-1 { margin-top: 0.5rem; }
 .mt-2 { margin-top: 1rem; }

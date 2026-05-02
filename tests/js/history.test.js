@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
+import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import History from '../../app/static/history.js';
 
 const STORAGE_KEY = 'vanishd_history';
@@ -116,6 +116,43 @@ describe('render', () => {
     document.querySelector('.history-copy').click();
     await Promise.resolve();
     expect(written[0]).toBe('http://localhost/s/x');
+  });
+});
+
+describe('consumed status', () => {
+  beforeEach(() => { setupDOM(); localStorage.clear(); });
+
+  test('badge updates to Consumido when HEAD returns 404', async () => {
+    global.fetch = () => Promise.resolve({ status: 404 });
+    History.add(makeEntry({ ttl: 3600, createdAt: Date.now() }));
+    History.render();
+    await new Promise(r => setTimeout(r, 10));
+    expect(document.querySelector('.badge-warning').textContent).toBe('Consumido');
+  });
+
+  test('badge stays Ativo when HEAD returns 200', async () => {
+    global.fetch = () => Promise.resolve({ status: 200 });
+    History.add(makeEntry({ ttl: 3600, createdAt: Date.now() }));
+    History.render();
+    await new Promise(r => setTimeout(r, 10));
+    expect(document.querySelector('.badge-success').textContent).toBe('Ativo');
+  });
+
+  test('badge stays unchanged when HEAD fetch throws', async () => {
+    global.fetch = () => Promise.reject(new Error('network'));
+    History.add(makeEntry({ ttl: 3600, createdAt: Date.now() }));
+    History.render();
+    await new Promise(r => setTimeout(r, 10));
+    expect(document.querySelector('.badge-success').textContent).toBe('Ativo');
+  });
+
+  test('expired entries skip HEAD check', async () => {
+    const fetchSpy = jest.fn();
+    global.fetch = fetchSpy;
+    History.add(makeEntry({ ttl: 1, createdAt: Date.now() - 10000 }));
+    History.render();
+    await new Promise(r => setTimeout(r, 10));
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });
 

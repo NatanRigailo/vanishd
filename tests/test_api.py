@@ -72,6 +72,25 @@ def test_read_secret_one_time(client):
     assert client.get(f"/api/secrets/{secret_id}").status_code == 404
 
 
+def test_check_secret_exists(client):
+    secret_id = client.post(
+        "/api/secrets", json={"ciphertext": "x", "iv": "iv", "ttl": 3600}
+    ).get_json()["id"]
+    assert client.head(f"/api/secrets/{secret_id}").status_code == 200
+
+
+def test_check_secret_not_found(client):
+    assert client.head("/api/secrets/does-not-exist").status_code == 404
+
+
+def test_check_secret_does_not_consume(client):
+    secret_id = client.post(
+        "/api/secrets", json={"ciphertext": "x", "iv": "iv", "ttl": 3600}
+    ).get_json()["id"]
+    client.head(f"/api/secrets/{secret_id}")
+    assert client.get(f"/api/secrets/{secret_id}").status_code == 200
+
+
 def test_read_secret_not_found(client):
     assert client.get("/api/secrets/does-not-exist").status_code == 404
 
