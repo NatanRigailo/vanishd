@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} — Vanishd{% endblock %}
+
+{% block content %}
+<div class="card error-page">
+  <p class="error-code">{{ code }}</p>
+  <p class="error-msg">{{ message }}</p>
+  <a href="/" class="btn">Criar novo secret</a>
+</div>
+{% endblock %}

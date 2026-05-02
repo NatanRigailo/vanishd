@@ -242,6 +242,24 @@ select { appearance: none; cursor: pointer; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+.error-page { text-align: center; padding: 1rem 0; }
+
+.error-code {
+  font-family: var(--mono);
+  font-size: 5rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.error-msg {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.75rem;
+}
+
 footer {
   margin-top: 3rem;
   font-family: var(--mono);
