@@ -30,6 +30,13 @@ jobs:
         with:
           dockerfile: Dockerfile
 
+      - name: actionlint
+        run: |
+          curl -sLo /tmp/dl-actionlint.bash \
+            https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash
+          bash /tmp/dl-actionlint.bash 1.7.7
+          ./actionlint -color
+
   sast:
     name: SAST
     runs-on: ubuntu-latest
