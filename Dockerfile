@@ -1,6 +1,10 @@
 FROM python:3.14-slim AS builder
 
 WORKDIR /build
+# hadolint ignore=DL3008
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libpq-dev build-essential \
+ && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 

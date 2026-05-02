@@ -1,4 +1,5 @@
 import time
+from unittest.mock import patch
 
 import app.db as db
 
@@ -79,3 +80,28 @@ def test_read_secret_expired(client):
     conn.close()
 
     assert client.get("/api/secrets/expired-id").status_code == 404
+
+
+def test_healthz_db_error(client):
+    with patch("app.routes.ping_db", side_effect=RuntimeError("db down")):
+        r = client.get("/healthz")
+    assert r.status_code == 503
+    assert r.get_json()["db"] == "error"
+
+
+def test_handle_too_large(app):
+    app.config["MAX_CONTENT_LENGTH"] = 50
+    r = app.test_client().post(
+        "/api/secrets",
+        data=b"x" * 100,
+        content_type="application/json",
+    )
+    assert r.status_code == 413
+
+
+def test_index_page(client):
+    assert client.get("/").status_code == 200
+
+
+def test_view_page(client):
+    assert client.get("/s/some-id").status_code == 200
