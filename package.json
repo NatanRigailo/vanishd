@@ -13,6 +13,6 @@
     "testEnvironment": "jsdom",
     "coverageDirectory": "coverage-js",
     "coverageReporters": ["lcov", "text"],
-    "collectCoverageFrom": ["app/static/history.js"]
+    "collectCoverageFrom": ["app/static/history.js", "app/static/view.js"]
   }
 }

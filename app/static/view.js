@@ -1,8 +1,6 @@
 import VanishCrypto from './crypto.js';
 
-const secretId = document.getElementById('app').dataset.secretId;
-const keyB64 = location.hash.slice(1);
-const panels = ['loading', 'password-section', 'success-section', 'error-section'];
+const panels = ['loading', 'confirm-section', 'password-section', 'success-section', 'error-section'];
 
 function show(id) {
   panels.forEach(p => document.getElementById(p).classList.add('hidden'));
@@ -19,7 +17,7 @@ function showError(msg) {
   show('error-section');
 }
 
-async function decryptWithKey() {
+async function decryptWithKey(secretId, keyB64) {
   try {
     const res = await fetch(`/api/secrets/${secretId}`);
     if (!res.ok) { showError('Secret não encontrado, expirado ou já foi lido.'); return; }
@@ -31,7 +29,7 @@ async function decryptWithKey() {
   }
 }
 
-async function decryptWithPassword(password) {
+async function decryptWithPassword(secretId, password) {
   try {
     const res = await fetch(`/api/secrets/${secretId}`);
     if (!res.ok) { showError('Secret não encontrado, expirado ou já foi lido.'); return; }
@@ -44,17 +42,26 @@ async function decryptWithPassword(password) {
   }
 }
 
-if (keyB64) {
-  await decryptWithKey();
-} else {
-  show('password-section');
-  document.getElementById('decrypt-btn').addEventListener('click', async () => {
-    const password = document.getElementById('password').value;
-    if (!password) { alert('Digite a senha.'); return; }
-    show('loading');
-    await decryptWithPassword(password);
-  });
-  document.getElementById('password').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('decrypt-btn').click();
-  });
+export function init(secretId, keyB64) {
+  if (keyB64) {
+    show('confirm-section');
+    document.getElementById('reveal-btn').addEventListener('click', async () => {
+      show('loading');
+      await decryptWithKey(secretId, keyB64);
+    });
+  } else {
+    show('password-section');
+    document.getElementById('decrypt-btn').addEventListener('click', async () => {
+      const password = document.getElementById('password').value;
+      if (!password) { alert('Digite a senha.'); return; }
+      show('loading');
+      await decryptWithPassword(secretId, password);
+    });
+    document.getElementById('password').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('decrypt-btn').click();
+    });
+  }
 }
+
+const secretId = document.getElementById('app').dataset.secretId;
+init(secretId, location.hash.slice(1));
