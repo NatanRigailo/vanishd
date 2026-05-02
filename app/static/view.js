@@ -1,4 +1,4 @@
-import VanishCrypto from '/static/crypto.js';
+import VanishCrypto from './crypto.js';
 
 const secretId = document.getElementById('app').dataset.secretId;
 const keyB64 = location.hash.slice(1);
