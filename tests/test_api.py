@@ -89,7 +89,27 @@ def test_healthz_db_error(client):
     assert r.get_json()["db"] == "error"
 
 
-def test_handle_too_large(app):
+def test_index_page(client):
+    assert client.get("/").status_code == 200
+
+
+def test_view_page(client):
+    assert client.get("/s/some-id").status_code == 200
+
+
+def test_404_page_returns_html(client):
+    r = client.get("/this-route-does-not-exist")
+    assert r.status_code == 404
+    assert b"404" in r.data
+
+
+def test_404_api_returns_json(client):
+    r = client.get("/api/nonexistent")
+    assert r.status_code == 404
+    assert r.get_json()["error"] == "not found"
+
+
+def test_413_api_returns_json(app):
     app.config["MAX_CONTENT_LENGTH"] = 50
     r = app.test_client().post(
         "/api/secrets",
@@ -97,11 +117,12 @@ def test_handle_too_large(app):
         content_type="application/json",
     )
     assert r.status_code == 413
+    assert r.get_json()["error"] == "request too large"
 
 
-def test_index_page(client):
-    assert client.get("/").status_code == 200
-
-
-def test_view_page(client):
-    assert client.get("/s/some-id").status_code == 200
+def test_500_api_returns_json(app):
+    app.config["PROPAGATE_EXCEPTIONS"] = False
+    with patch("app.routes.get_db", side_effect=RuntimeError("db")):
+        r = app.test_client().get("/api/secrets/x")
+    assert r.status_code == 500
+    assert r.get_json()["error"] == "internal server error"
