@@ -2,3 +2,6 @@
 10202	IGNORE	Absence of Anti-CSRF Tokens - mitigado via Content-Type: application/json
 10049	IGNORE	Storable and Cacheable Content - assets estaticos sao intencionalmente cacheaveis
 10021	IGNORE	X-Content-Type-Options - header presente, falso positivo em respostas sem body
+10055	IGNORE	CSP Failure to Define Directive with No Fallback - CSP configurado intencionalmente sem fallback
+10106	IGNORE	HTTP Only Site - HSTS nao se aplica em ambiente de teste sem TLS
+90004	IGNORE	Cross-Origin-Resource-Policy Header Missing - assets proprios sem necessidade de CORP
