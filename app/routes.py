@@ -8,7 +8,7 @@ from flask import Blueprint, jsonify, render_template, request
 from flask_limiter.errors import RateLimitExceeded
 
 from app import limiter
-from app.db import get_db
+from app.db import get_db, ping_db
 
 log = logging.getLogger(__name__)
 bp = Blueprint("main", __name__)
@@ -34,7 +34,16 @@ def handle_too_large(e):
 
 @bp.route("/healthz", methods=["GET"])
 def healthz():
-    return jsonify({"status": "ok", "time": int(time.time())})
+    try:
+        ping_db()
+        db_status = "ok"
+    except Exception:
+        log.exception("healthz_db_error")
+        db_status = "error"
+
+    status = "ok" if db_status == "ok" else "error"
+    code = 200 if status == "ok" else 503
+    return jsonify({"status": status, "db": db_status, "time": int(time.time())}), code
 
 
 @bp.route("/", methods=["GET"])
