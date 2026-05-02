@@ -63,7 +63,7 @@ main { width: 100%; max-width: 540px; }
 }
 
 label,
-.field-label {
+legend {
   display: block;
   font-family: var(--mono);
   font-size: 0.65rem;
@@ -72,6 +72,12 @@ label,
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 0.4rem;
+}
+
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 textarea,
