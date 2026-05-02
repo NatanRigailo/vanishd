@@ -18,6 +18,14 @@ def test_create_secret_valid(client):
     assert "id" in r.get_json()
 
 
+def test_create_secret_wrong_content_type(client):
+    r = client.post(
+        "/api/secrets", data="ciphertext=abc",
+        content_type="application/x-www-form-urlencoded",
+    )
+    assert r.status_code == 415
+
+
 def test_create_secret_missing_ciphertext(client):
     r = client.post("/api/secrets", json={"iv": "iv", "ttl": 3600})
     assert r.status_code == 400

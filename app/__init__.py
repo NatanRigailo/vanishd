@@ -12,6 +12,8 @@ log = logging.getLogger(__name__)
 
 def create_app():
     app = Flask(__name__)
+    # NOSONAR python:S4502 — CSRF N/A: JSON-only API, no session auth, no state-altering cookies.
+    # Content-Type enforcement in create_secret() provides equivalent CORS-preflight protection.
     app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(32).hex()
     app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_CONTENT_LENGTH", 65536))
 

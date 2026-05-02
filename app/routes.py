@@ -89,6 +89,8 @@ def view_secret(secret_id):
 @bp.route("/api/secrets", methods=["POST"])
 @limiter.limit(f"{RATE_LIMIT_POST}/minute")
 def create_secret():
+    if not request.is_json:
+        return jsonify({"error": "content-type must be application/json"}), 415
     data = request.get_json(silent=True) or {}
     ciphertext = (data.get("ciphertext") or "").strip()
     iv = (data.get("iv") or "").strip()
