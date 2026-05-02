@@ -11,6 +11,11 @@ RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 FROM python:3.14-slim
 
+# hadolint ignore=DL3008
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libpq5 \
+ && rm -rf /var/lib/apt/lists/*
+
 RUN groupadd -r vanishd \
  && useradd -r -g vanishd -d /app -s /sbin/nologin vanishd
 
