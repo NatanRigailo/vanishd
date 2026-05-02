@@ -1,4 +1,5 @@
 import VanishCrypto from './crypto.js';
+import History from './history.js';
 
 let mode = 'link';
 
@@ -52,6 +53,8 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     document.getElementById('result').classList.add('show');
     document.getElementById('secret').value = '';
     if (mode === 'password') document.getElementById('password').value = '';
+    History.add({ id, url, mode, ttl, createdAt: Date.now() });
+    History.render();
   } catch (err) {
     alert(err.message || 'Erro ao criar o secret.');
   } finally {
@@ -59,6 +62,8 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     btn.textContent = 'Criar link seguro';
   }
 });
+
+History.setup();
 
 document.getElementById('copy-btn').addEventListener('click', () => {
   const url = document.getElementById('result-url').textContent;

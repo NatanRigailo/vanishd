@@ -1,4 +1,6 @@
 .env
+node_modules/
+coverage-js/
 *.pyc
 __pycache__/
 *.egg-info/

@@ -119,6 +119,20 @@ def create_secret():
     return jsonify({"id": secret_id}), 201
 
 
+@bp.route("/api/secrets/<secret_id>", methods=["HEAD"])
+@limiter.limit(f"{os.environ.get('RATE_LIMIT_PER_MINUTE', '20')}/minute")
+def check_secret(secret_id):
+    conn = get_db()
+    try:
+        row = conn.execute(
+            "SELECT 1 FROM secrets WHERE id = ? AND expires_at > ?",
+            (secret_id, int(time.time())),
+        ).fetchone()
+    finally:
+        conn.close()
+    return "", 200 if row else 404
+
+
 @bp.route("/api/secrets/<secret_id>", methods=["GET"])
 @limiter.limit(f"{os.environ.get('RATE_LIMIT_PER_MINUTE', '20')}/minute")
 def read_secret(secret_id):
