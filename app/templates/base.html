@@ -4,17 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Vanishd{% endblock %}</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/fonts.css">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <header>
-    <a href="/" class="logo">vanishd</a>
-    <p class="tagline">zero-knowledge · one-time · self-hosted</p>
+    <a href="/" class="logo">vanish<em>d</em></a>
+    <p class="tagline">zero-knowledge &middot; one-time &middot; self-hosted</p>
   </header>
   <main>
     {% block content %}{% endblock %}
   </main>
-  <script src="/static/crypto.js"></script>
+  <footer>vanishd &mdash; client-side AES-256-GCM</footer>
   {% block scripts %}{% endblock %}
 </body>
 </html>

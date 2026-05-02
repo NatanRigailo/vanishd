@@ -44,6 +44,7 @@ def _set_security_headers(response):
         "default-src 'self'; "
         "script-src 'self'; "
         "style-src 'self'; "
+        "font-src 'self'; "
         "img-src 'self'; "
         "connect-src 'self'; "
         "frame-ancestors 'none';"
