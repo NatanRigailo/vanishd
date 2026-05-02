@@ -12,6 +12,14 @@ def get_db():
     return conn
 
 
+def ping_db():
+    conn = get_db()
+    try:
+        conn.execute("SELECT 1")
+    finally:
+        conn.close()
+
+
 def init_db():
     db_dir = os.path.dirname(DATABASE_PATH)
     if db_dir:
