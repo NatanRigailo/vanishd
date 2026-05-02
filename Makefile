@@ -22,8 +22,8 @@ clean: down
 	docker rmi $(IMAGE_NAME) || true
 
 dev:
-	pip install pre-commit
-	pre-commit install
+	pip install --user --break-system-packages pre-commit || pip install pre-commit
+	pre-commit install 2>/dev/null || ~/.local/bin/pre-commit install
 
 lint:
 	flake8 app/
