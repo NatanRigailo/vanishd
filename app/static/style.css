@@ -62,7 +62,8 @@ main { width: 100%; max-width: 540px; }
   padding: 1.75rem;
 }
 
-label {
+label,
+.field-label {
   display: block;
   font-family: var(--mono);
   font-size: 0.65rem;
