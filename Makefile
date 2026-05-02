@@ -2,7 +2,7 @@ IMAGE_NAME ?= vanishd
 PORT       ?= 8080
 DATA_VOL   ?= vanishd_data
 
-.PHONY: up down build lint clean logs shell dev
+.PHONY: up down build lint test clean logs shell dev
 
 build:
 	docker build -t $(IMAGE_NAME) .
@@ -28,6 +28,9 @@ dev:
 lint:
 	flake8 app/
 	hadolint Dockerfile
+
+test:
+	pytest --cov=app --cov-report=term-missing
 
 logs:
 	docker logs -f $(IMAGE_NAME)
