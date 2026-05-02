@@ -76,6 +76,8 @@ Compartilhamento de secrets zero-knowledge com links de uso único — o servido
 | `LOG_LEVEL` | `INFO` | Nível de log (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
 | `MAX_TTL_SECONDS` | `604800` | TTL máximo permitido (7 dias) |
 | `RATE_LIMIT_PER_MINUTE` | `20` | Requests por minuto por IP no endpoint de leitura |
+| `RATE_LIMIT_POST_PER_MINUTE` | `10` | Requests por minuto por IP no endpoint de escrita |
+| `MAX_CONTENT_LENGTH` | `65536` | Tamanho máximo do body da requisição (bytes) |
 | `CLEANUP_INTERVAL_SECONDS` | `3600` | Intervalo do job de limpeza de secrets expirados |
 | `DATABASE_PATH` | `/data/vanishd.db` | Caminho do arquivo SQLite |
 
@@ -123,13 +125,36 @@ As milestones e issues são gerenciadas no GitHub: https://github.com/NatanRigai
 
 ## Estado atual
 
-**Versão:** em desenvolvimento (pré v0.1)
+**Versão:** v0.6 em andamento
 
-**O que já funciona:**
-- Repositório criado com labels, milestones e issues organizadas
+**Milestones concluídas:**
+- ✅ v0.1 — Fundação: estrutura, Dockerfile multi-stage non-root, Flask skeleton, SQLite schema
+- ✅ v0.2 — Core Feature: AES-256-GCM client-side, POST/GET /api/secrets, modo link + modo senha, UI mínima
+- ✅ v0.3 — CI Pipeline: lint (flake8+hadolint), SAST (bandit), build+Trivy, SonarCloud, Dependabot, CODEOWNERS
+- ✅ v0.4 — Security Hardening: rate limiting, secure headers + CSP sem unsafe-inline, cleanup job, logging seguro
+- ✅ v0.5 — Release & Deploy: auto-tag semver, publish GHCR, deploy Render via webhook, README com badges
 
-**Próximo passo:**
-- Implementar v0.1: estrutura do projeto + Dockerfile + app skeleton + SQLite schema
+**v0.6 — Em andamento:**
+- PR #70 (`fix/post-rate-limit-log-injection`): rate limit POST /api/secrets, MAX_CONTENT_LENGTH, log injection sanitization — fecha #53 e #58
+- Issue #52: /healthz com verificação do banco de dados
+- Issue #45: pre-commit hooks (hadolint, bandit, flake8)
+- Issue #54: actionlint — validação de sintaxe dos workflows
+- Issue #59: code smells JavaScript apontados pelo SonarCloud
+- Issue #47: testes unitários e de integração
+
+**Issues avulsas em aberto:**
+- Issue #64: security hotspot CSRF — avaliar proteção CSRF no POST /api/secrets (SonarCloud S4502)
+- Issues #65–69: Dependabot (bumps de Actions e flask-limiter)
+
+**Próximas milestones:**
+- v0.7 — Production Ready: PostgreSQL/Supabase, pip-audit, gitleaks
+- v1.0 — Security Verified: DAST (OWASP ZAP), design system, páginas de erro, histórico localStorage, acessibilidade
+- v1.1 — UX Polish: botão de revelação (expira só ao confirmar leitura)
+
+**Lições aprendidas do ciclo v0.1–v0.5:**
+- `build-and-scan` precisa de `if: always() && ... (sast.result == 'success' || sast.result == 'skipped')` para funcionar em PRs do Dependabot
+- SonarCloud PR decoration exige `pull-requests: write` no job + permissão "Pull requests: Read and write" no GitHub App do SonarCloud
+- CSP sem `unsafe-inline`: mover todo JS inline para arquivos estáticos; passar dados do servidor via `data-*` attributes
 
 ---
 
