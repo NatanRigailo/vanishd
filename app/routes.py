@@ -98,7 +98,9 @@ def read_secret(secret_id):
         conn.close()
 
     if row is None:
-        log.warning("secret_not_found id=%s ip=%s", _sanitize(secret_id), _sanitize(request.remote_addr))
+        log.warning(
+            "secret_not_found id=%s ip=%s", _sanitize(secret_id), _sanitize(request.remote_addr)
+        )
         return jsonify({"error": "secret not found or expired"}), 404
 
     log.info("secret_read id=%s ip=%s", _sanitize(secret_id), _sanitize(request.remote_addr))
