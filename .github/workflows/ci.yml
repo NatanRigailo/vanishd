@@ -190,7 +190,7 @@ jobs:
 
       - name: ZAP Baseline Scan
         run: |
-          mkdir -p zap-output
+          mkdir -p zap-output && chmod 777 zap-output
           docker run --rm --network host \
             -v "${{ github.workspace }}/.zap/rules.tsv:/zap/rules.tsv:ro" \
             -v "${{ github.workspace }}/zap-output:/zap/wrk" \
