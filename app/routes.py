@@ -25,6 +25,10 @@ def _wants_json():
     return request.path.startswith("/api/")
 
 
+def _error_page(code, message):
+    return render_template("error.html", code=code, message=message), code
+
+
 @bp.app_errorhandler(RateLimitExceeded)
 def handle_rate_limit(e):
     log.warning("rate_limit_exceeded ip=%s", _sanitize(request.remote_addr))
@@ -35,20 +39,14 @@ def handle_rate_limit(e):
 def handle_too_large(e):
     if _wants_json():
         return jsonify({"error": "request too large"}), 413
-    return render_template(
-        "error.html", code=413,
-        message="Conteúdo muito grande. O tamanho máximo permitido foi excedido."
-    ), 413
+    return _error_page(413, "Conteúdo muito grande. O tamanho máximo permitido foi excedido.")
 
 
 @bp.app_errorhandler(404)
 def handle_not_found(e):
     if _wants_json():
         return jsonify({"error": "not found"}), 404
-    return render_template(
-        "error.html", code=404,
-        message="Página não encontrada."
-    ), 404
+    return _error_page(404, "Página não encontrada.")
 
 
 @bp.app_errorhandler(500)
@@ -56,10 +54,7 @@ def handle_server_error(e):
     log.exception("internal_server_error")
     if _wants_json():
         return jsonify({"error": "internal server error"}), 500
-    return render_template(
-        "error.html", code=500,
-        message="Algo deu errado. Tente novamente mais tarde."
-    ), 500
+    return _error_page(500, "Algo deu errado. Tente novamente mais tarde.")
 
 
 @bp.route("/healthz", methods=["GET"])
