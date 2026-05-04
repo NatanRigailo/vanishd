@@ -1,5 +1,10 @@
 import VanishCrypto from './crypto.js';
 
+function getT() {
+  try { return JSON.parse(document.body.dataset.i18n) || {}; }
+  catch { return {}; }
+}
+
 const panels = ['loading', 'confirm-section', 'password-section', 'success-section', 'error-section'];
 
 function show(id) {
@@ -13,32 +18,35 @@ function showSecret(text) {
 }
 
 function showError(msg) {
-  document.getElementById('error-msg').textContent = msg || 'Secret não encontrado ou já foi lido.';
+  const t = getT();
+  document.getElementById('error-msg').textContent = msg || t.js_not_found || '';
   show('error-section');
 }
 
 async function decryptWithKey(secretId, keyB64) {
+  const t = getT();
   try {
     const res = await fetch(`/api/secrets/${secretId}`);
-    if (!res.ok) { showError('Secret não encontrado, expirado ou já foi lido.'); return; }
+    if (!res.ok) { showError(t.js_not_found_expired); return; }
     const { ciphertext, iv } = await res.json();
     const key = await VanishCrypto.importKey(keyB64);
     showSecret(await VanishCrypto.decrypt(ciphertext, iv, key));
   } catch {
-    showError('Falha ao decifrar o secret. O link pode estar corrompido.');
+    showError(t.js_decrypt_failed);
   }
 }
 
 async function decryptWithPassword(secretId, password) {
+  const t = getT();
   try {
     const res = await fetch(`/api/secrets/${secretId}`);
-    if (!res.ok) { showError('Secret não encontrado, expirado ou já foi lido.'); return; }
+    if (!res.ok) { showError(t.js_not_found_expired); return; }
     const { ciphertext, iv, salt } = await res.json();
-    if (!salt) { showError('Este secret não usa modo senha.'); return; }
+    if (!salt) { showError(t.js_not_password_mode); return; }
     const key = await VanishCrypto.deriveKey(password, VanishCrypto.b64ToBytes(salt));
     showSecret(await VanishCrypto.decrypt(ciphertext, iv, key));
   } catch {
-    showError('Senha incorreta ou dados corrompidos.');
+    showError(t.js_wrong_password);
   }
 }
 
@@ -52,8 +60,9 @@ export function init(secretId, keyB64) {
   } else {
     show('password-section');
     document.getElementById('decrypt-btn').addEventListener('click', async () => {
+      const t = getT();
       const password = document.getElementById('password').value;
-      if (!password) { alert('Digite a senha.'); return; }
+      if (!password) { alert(t.js_enter_password || ''); return; }
       show('loading');
       await decryptWithPassword(secretId, password);
     });

@@ -9,6 +9,7 @@ from flask_limiter.errors import RateLimitExceeded
 
 from app import limiter
 from app.db import get_db, ping_db
+from app.i18n import get_t
 
 log = logging.getLogger(__name__)
 bp = Blueprint("main", __name__)
@@ -39,14 +40,14 @@ def handle_rate_limit(e):
 def handle_too_large(e):
     if _wants_json():
         return jsonify({"error": "request too large"}), 413
-    return _error_page(413, "Conteúdo muito grande. O tamanho máximo permitido foi excedido.")
+    return _error_page(413, get_t()["err_too_large"])
 
 
 @bp.app_errorhandler(404)
 def handle_not_found(e):
     if _wants_json():
         return jsonify({"error": "not found"}), 404
-    return _error_page(404, "Página não encontrada.")
+    return _error_page(404, get_t()["err_not_found"])
 
 
 @bp.app_errorhandler(500)
@@ -54,7 +55,7 @@ def handle_server_error(e):
     log.exception("internal_server_error")
     if _wants_json():
         return jsonify({"error": "internal server error"}), 500
-    return _error_page(500, "Algo deu errado. Tente novamente mais tarde.")
+    return _error_page(500, get_t()["err_server"])
 
 
 @bp.route("/healthz", methods=["GET"])

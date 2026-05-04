@@ -14,12 +14,27 @@ function makeEntry(overrides = {}) {
   };
 }
 
+const PT_STRINGS = {
+  badge_active: 'Ativo',
+  badge_consumed: 'Consumido',
+  badge_expired: 'Expirado',
+  mode_password_label: 'Senha',
+  btn_copy_short: 'Copiar',
+  btn_copied_short: 'Copiado!',
+  btn_remove: 'Remover',
+  ttl_1h: '1 hora',
+  ttl_24h: '24 horas',
+  ttl_3d: '3 dias',
+  ttl_7d: '7 dias',
+};
+
 function setupDOM() {
   document.body.innerHTML = `
     <section id="history" class="hidden">
       <button id="clear-history" type="button">Limpar tudo</button>
       <ul id="history-list"></ul>
     </section>`;
+  document.body.dataset.i18n = JSON.stringify(PT_STRINGS);
 }
 
 describe('storage', () => {

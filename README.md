@@ -35,8 +35,11 @@ Open `http://localhost:8080`.
 |---|---|---|
 | `SECRET_KEY` | generated at runtime | Flask secret key — set explicitly in production |
 | `LOG_LEVEL` | `INFO` | Log level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+| `DEFAULT_LANGUAGE` | `pt-BR` | UI default language (`pt-BR` or `en`) |
 | `MAX_TTL_SECONDS` | `604800` | Maximum allowed TTL (7 days) |
 | `RATE_LIMIT_PER_MINUTE` | `20` | Requests per minute per IP on the read endpoint |
+| `RATE_LIMIT_POST_PER_MINUTE` | `10` | Requests per minute per IP on the write endpoint |
+| `MAX_CONTENT_LENGTH` | `65536` | Maximum request body size (bytes) |
 | `CLEANUP_INTERVAL_SECONDS` | `3600` | Interval for the expired secrets cleanup job |
 | `DATABASE_PATH` | `/data/vanishd.db` | SQLite file path |
 
