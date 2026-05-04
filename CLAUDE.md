@@ -1,223 +1,224 @@
 # CLAUDE.md — `vanishd`
 
-> Gerado a partir do template `git/_templates/CLAUDE-projeto.md`
-> Este agente roda via **Claude Code** e tem acesso ao filesystem e ferramentas de terminal.
+> Generated from the template `git/_templates/CLAUDE-projeto.md`
+> This agent runs via **Claude Code** and has access to the filesystem and terminal tools.
 
 ---
 
-## O que é este projeto
+## What this project is
 
-Compartilhamento de secrets zero-knowledge com links de uso único — o servidor nunca acessa o plaintext.
+Zero-knowledge secret sharing with one-time links — the server never sees the plaintext.
 
-**Por que existe:** Demonstra arquitetura zero-knowledge com client-side AES-GCM, one-time token pattern, e pipeline DevOps completo sobre uma aplicação de segurança real.
+**Why it exists:** Demonstrates zero-knowledge architecture with client-side AES-GCM, the one-time token pattern, and a complete DevOps pipeline on top of a real security application.
 
-**Competências DevOps demonstradas neste projeto:**
-- Arquitetura zero-knowledge: client-side crypto com Web Crypto API nativa
-- CI/CD multi-stage: lint → SAST → build → scan → release → publish → deploy
-- Container scanning com Trivy + SAST com Bandit
-- Security hardening: rate limiting, secure headers, delete atômico, logging seguro
-- Self-hosted end-to-end: GHCR + GitHub Actions free tier + deploy via Docker Compose
-
----
-
-## Stack da aplicação
-
-- **Linguagem/runtime:** Python 3.12 / Flask
-- **Banco de dados:** SQLite (stdlib `sqlite3`, volume Docker para persistência)
-- **Servidor:** Waitress (produção)
-- **Frontend:** HTML + CSS + JavaScript vanilla — Web Crypto API nativa, zero dependências JS externas
+**DevOps skills demonstrated in this project:**
+- Zero-knowledge architecture: client-side crypto with the native Web Crypto API
+- Multi-stage CI/CD: lint → SAST → build → scan → release → publish → deploy
+- Container scanning with Trivy + SAST with Bandit
+- Security hardening: rate limiting, secure headers, atomic delete, safe logging
+- End-to-end self-hosted: GHCR + GitHub Actions free tier + deploy via Docker Compose
 
 ---
 
-## Stack DevOps
+## Application stack
+
+- **Language/runtime:** Python 3.12 / Flask
+- **Database:** SQLite (stdlib `sqlite3`, Docker volume for persistence)
+- **Server:** Waitress (production)
+- **Frontend:** HTML + CSS + vanilla JavaScript — native Web Crypto API, zero external JS dependencies
+
+---
+
+## DevOps stack
 
 - **CI/CD:** GitHub Actions
-  - Stages: lint (flake8 + hadolint) → SAST (bandit) → build → scan (Trivy) → release (auto-tag semver) → publish (GHCR) → deploy
+  - Stages: lint (flake8 + hadolint) → SAST (bandit) → build → scan (Trivy) → release (semver auto-tag) → publish (GHCR) → deploy
 - **Registry:** GHCR (`ghcr.io/NatanRigailo/vanishd`)
-- **Qualidade:** SonarCloud
-- **Scan:** Trivy (CVEs na imagem)
-- **Dependências:** Dependabot (pip semanal + actions semanal)
-- **Reverse proxy:** não configurado ainda (Traefik/Nginx quando for para produção)
-- **Observabilidade:** apenas `/healthz` por enquanto — Prometheus+Grafana fora do escopo inicial
+- **Quality:** SonarCloud
+- **Scan:** Trivy (CVEs on the image)
+- **Dependencies:** Dependabot (pip weekly + actions weekly)
+- **Reverse proxy:** not configured yet (Traefik/Nginx when moving to production)
+- **Observability:** only `/healthz` for now — Prometheus+Grafana out of initial scope
 
 ---
 
-## Como funciona — arquitetura zero-knowledge
+## How it works — zero-knowledge architecture
 
-### Modo link completo (chave no fragment)
+### Link mode (key in the fragment)
 ```
-[Browser remetente]                    [Servidor]              [Browser destinatário]
-   gera chave AES-256-GCM
-   cifra o secret (AES-GCM)
-   POST /api/secrets {ciphertext} ──► armazena blob cifrado
-   recebe {id}                        nunca viu o plaintext
-   monta URL: /s/{id}#{base64(chave)}
-                                                               abre o link
-                                                               extrai chave do #fragment
-                                                               GET /api/secrets/{id} ──► retorna + deleta
-                                                               decifra localmente com a chave
-                                                               exibe o secret
-                                                               (link inválido para sempre)
+[Sender browser]                       [Server]              [Recipient browser]
+   generates AES-256-GCM key
+   encrypts the secret (AES-GCM)
+   POST /api/secrets {ciphertext} ──► stores encrypted blob
+   receives {id}                       never saw the plaintext
+   builds URL: /s/{id}#{base64(key)}
+                                                              opens the link
+                                                              extracts key from #fragment
+                                                              GET /api/secrets/{id} ──► returns + deletes
+                                                              decrypts locally with the key
+                                                              displays the secret
+                                                              (link invalid forever)
 ```
 
-### Modo senha (PBKDF2)
-- Remetente define uma senha; JS deriva chave AES via PBKDF2 (200k iterações, SHA-256)
-- Salt aleatório armazenado com o ciphertext (não é segredo)
-- Link não contém a chave — destinatário digita a senha para derivar e decifrar
-- Servidor armazena: `ciphertext + salt` — continua sem ver o plaintext
+### Password mode (PBKDF2)
+- Sender sets a password; JS derives the AES key via PBKDF2 (200k iterations, SHA-256)
+- Random salt stored alongside the ciphertext (not a secret)
+- Link does not contain the key — recipient types the password to derive and decrypt
+- Server stores: `ciphertext + salt` — still never sees the plaintext
 
 ---
 
-## Variáveis de ambiente
+## Environment variables
 
-| Variável | Padrão | Descrição |
-|----------|--------|-----------|
-| `SECRET_KEY` | gerado em runtime | Chave Flask para sessão/CSRF |
-| `LOG_LEVEL` | `INFO` | Nível de log (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
-| `MAX_TTL_SECONDS` | `604800` | TTL máximo permitido (7 dias) |
-| `RATE_LIMIT_PER_MINUTE` | `20` | Requests por minuto por IP no endpoint de leitura |
-| `RATE_LIMIT_POST_PER_MINUTE` | `10` | Requests por minuto por IP no endpoint de escrita |
-| `MAX_CONTENT_LENGTH` | `65536` | Tamanho máximo do body da requisição (bytes) |
-| `CLEANUP_INTERVAL_SECONDS` | `3600` | Intervalo do job de limpeza de secrets expirados |
-| `DATABASE_PATH` | `/data/vanishd.db` | Caminho do arquivo SQLite |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SECRET_KEY` | generated at runtime | Flask key for session/CSRF |
+| `LOG_LEVEL` | `INFO` | Log level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+| `MAX_TTL_SECONDS` | `604800` | Maximum allowed TTL (7 days) |
+| `RATE_LIMIT_PER_MINUTE` | `20` | Requests per minute per IP on the read endpoint |
+| `RATE_LIMIT_POST_PER_MINUTE` | `10` | Requests per minute per IP on the write endpoint |
+| `MAX_CONTENT_LENGTH` | `65536` | Maximum request body size (bytes) |
+| `CLEANUP_INTERVAL_SECONDS` | `3600` | Interval for the expired secrets cleanup job |
+| `DATABASE_PATH` | `/data/vanishd.db` | SQLite file path |
 
 ---
 
 ## Roadmap
 
-As milestones e issues são gerenciadas no GitHub: https://github.com/NatanRigailo/vanishd/milestones
+Milestones and issues are managed on GitHub: https://github.com/NatanRigailo/vanishd/milestones
 
-### v0.1 — Fundação
-- [ ] Estrutura inicial do projeto (pastas, arquivos base)
-- [ ] Dockerfile multi-stage non-root
-- [ ] Flask app skeleton com `/healthz` e logging estruturado
-- [ ] SQLite schema inicial
+### v0.1 — Foundation
+- [ ] Initial project structure (folders, base files)
+- [ ] Multi-stage non-root Dockerfile
+- [ ] Flask app skeleton with `/healthz` and structured logging
+- [ ] Initial SQLite schema
 
 ### v0.2 — Core Feature
 - [ ] Client-side AES-GCM encryption via Web Crypto API
-- [ ] API POST `/api/secrets` — receber e armazenar blob cifrado
-- [ ] API GET `/api/secrets/:id` — one-time read com delete atômico
-- [ ] Modo link completo — chave AES no URL fragment
-- [ ] Modo senha — PBKDF2 deriva chave AES a partir de senha do usuário
-- [ ] UI mínima — create e view de secrets
+- [ ] API POST `/api/secrets` — receive and store encrypted blob
+- [ ] API GET `/api/secrets/:id` — one-time read with atomic delete
+- [ ] Link mode — AES key in the URL fragment
+- [ ] Password mode — PBKDF2 derives the AES key from user password
+- [ ] Minimal UI — create and view secrets
 
 ### v0.3 — CI Pipeline
 - [ ] Lint stage (flake8 + hadolint)
-- [ ] SAST com bandit
-- [ ] Build da imagem Docker com cache
-- [ ] Container scan com Trivy
-- [ ] Dependabot para dependências Python e Actions
-- [ ] SonarCloud quality gate no CI
+- [ ] SAST with bandit
+- [ ] Docker image build with cache
+- [ ] Container scan with Trivy
+- [ ] Dependabot for Python dependencies and Actions
+- [ ] SonarCloud quality gate in CI
 
 ### v0.4 — Security Hardening
-- [ ] Rate limiting no endpoint de leitura
+- [ ] Rate limiting on the read endpoint
 - [ ] Secure HTTP headers (CSP, HSTS, X-Frame-Options)
-- [ ] Cleanup job para secrets expirados
-- [ ] Logging de acessos sem expor conteúdo sensível
+- [ ] Cleanup job for expired secrets
+- [ ] Access logging without exposing sensitive content
 
 ### v0.5 — Release & Deploy
-- [ ] Auto-tag semver no merge para main
-- [ ] Publish automático da imagem para GHCR
-- [ ] Deploy workflow via docker compose no host
-- [ ] README final com badges, quick start e roadmap versionado
+- [ ] Semver auto-tag on merge to main
+- [ ] Automatic image publish to GHCR
+- [ ] Deploy workflow via docker compose on the host
+- [ ] Final README with badges, quick start, and versioned roadmap
 
 ---
 
-## Estado atual
+## Current state
 
-**Versão:** v1.1.0 ✅
+**Version:** v1.1.0 ✅
 
-**Milestones concluídas:**
-- ✅ v0.1 — Fundação: estrutura, Dockerfile multi-stage non-root, Flask skeleton, SQLite schema
-- ✅ v0.2 — Core Feature: AES-256-GCM client-side, POST/GET /api/secrets, modo link + modo senha, UI mínima
+**Completed milestones:**
+- ✅ v0.1 — Foundation: structure, multi-stage non-root Dockerfile, Flask skeleton, SQLite schema
+- ✅ v0.2 — Core Feature: AES-256-GCM client-side, POST/GET /api/secrets, link mode + password mode, minimal UI
 - ✅ v0.3 — CI Pipeline: lint (flake8+hadolint), SAST (bandit), build+Trivy, SonarCloud, Dependabot, CODEOWNERS
-- ✅ v0.4 — Security Hardening: rate limiting, secure headers + CSP sem unsafe-inline, cleanup job, logging seguro
-- ✅ v0.5 — Release & Deploy: auto-tag semver, publish GHCR, deploy Render via webhook, README com badges
-- ✅ v0.6 — Quality & Dev Experience: pre-commit hooks, actionlint, JS code smells, testes (97% coverage), /healthz DB check, rate limit POST, log injection sanitization
-- ✅ v0.7 — Production Ready: suporte PostgreSQL via DATABASE_URL (_Conn wrapper, psycopg2-binary), pip-audit, gitleaks, fix libpq5 runtime (Render+Supabase via pooler IPv4 port 6543)
-- ✅ v1.0 — UX & Pipeline completo: design system, favicon, fontes locais, páginas de erro customizadas (404/500/413/429), histórico localStorage com badges de estado, acessibilidade (fieldset+legend), DAST OWASP ZAP baseline no CI, CSRF via Content-Type enforcement (SonarCloud S4502), testes JS com Jest + coverage lcov
-- ✅ v1.1 — UX Polish: botão de revelação — secret consumido apenas ao confirmar clique (modo link), view.js refatorado e testado (15 testes, 100% coverage)
+- ✅ v0.4 — Security Hardening: rate limiting, secure headers + CSP without unsafe-inline, cleanup job, safe logging
+- ✅ v0.5 — Release & Deploy: semver auto-tag, publish GHCR, deploy Render via webhook, README with badges
+- ✅ v0.6 — Quality & Dev Experience: pre-commit hooks, actionlint, JS code smells, tests (97% coverage), /healthz DB check, rate limit POST, log injection sanitization
+- ✅ v0.7 — Production Ready: PostgreSQL support via DATABASE_URL (_Conn wrapper, psycopg2-binary), pip-audit, gitleaks, fix libpq5 runtime (Render+Supabase via pooler IPv4 port 6543)
+- ✅ v1.0 — UX & Full Pipeline: design system, favicon, local fonts, custom error pages (404/500/413/429), localStorage history with status badges, accessibility (fieldset+legend), DAST OWASP ZAP baseline in CI, CSRF via Content-Type enforcement (SonarCloud S4502), JS tests with Jest + lcov coverage
+- ✅ v1.1 — UX Polish: reveal button — secret consumed only upon confirming click (link mode), view.js refactored and tested (15 tests, 100% coverage)
 
-**Próximas milestones:**
+**Upcoming milestones:**
 - v1.2 — Deploy Options: Docker Compose (#86) + Helm chart (#87)
-- v1.3 — Observability: /metrics Prometheus (#88) + load test k6 (#89)
+- v1.3 — Observability: /metrics Prometheus (#88) + k6 load test (#89)
 - v1.4 — Notifications: webhook on read Discord/Slack/Teams (#90)
+- v1.5 — i18n: PT-BR / EN language switcher + DEFAULT_LANGUAGE env var (#95)
 
-**Lições aprendidas:**
-- `build-and-scan` precisa de `if: always() && ... (sast.result == 'success' || sast.result == 'skipped')` para funcionar em PRs do Dependabot
-- SonarCloud PR decoration exige `pull-requests: write` no job + permissão "Pull requests: Read and write" no GitHub App do SonarCloud
-- CSP sem `unsafe-inline`: mover todo JS inline para arquivos estáticos; passar dados do servidor via `data-*` attributes
-- pytest-cov gera paths absolutos; SonarCloud precisa de `relative_files = True` no `.coveragerc`
-- psycopg2-binary sem wheel para Python 3.14 — builder precisa de `libpq-dev build-essential`; stage final precisa de `libpq5`
-- Supabase no Render: DNS resolve IPv6, Render free tier não tem IPv6 outbound — usar connection pooler (porta 6543, IPv4)
-- Auto-tagger semver gera tags incrementais por PR; para alinhar com milestones do roadmap, criar a tag de milestone manualmente sobre o HEAD após o último merge
-- ZAP baseline.py vs full-scan.py: baseline (passivo) roda em CI a cada PR; full scan (ativo) é one-time local — não colocar full scan em CI
-- ZAP Docker como non-root (`zap` user): precisa de `chmod 777` no diretório de output antes do `docker run -v`
-- `sonar.tests` não aceita subdirs que causem double-indexing — manter `sonar.tests=tests` e colocar JS tests dentro de `tests/js/`
-
----
-
-## Papel deste agente
-
-Este agente é um **executor** — não apenas consultor. Ele traduz o roadmap em entregas reais
-no repositório GitHub, trabalhando junto comigo em ciclos de discussão → execução → revisão.
-
-### Fluxo de trabalho padrão
-
-1. **Discussão** — conversamos sobre a próxima milestone ou tarefa, alinhamos o que será feito e como
-2. **Planejamento** — o agente propõe as issues a criar, com título, descrição e labels, e aguarda minha aprovação
-3. **Execução** — após aprovação, o agente:
-   - Cria a branch (`feat/`, `fix/`, `chore/` conforme o tipo)
-   - Implementa as mudanças com commits atômicos e mensagens em Conventional Commits
-   - Abre o PR linkando a issue, com descrição clara do que foi feito e checklist de revisão
-4. **Revisão** — eu reviso o PR e faço o merge. O agente não faz merge nunca.
-5. **Atualização** — após merge, o agente atualiza o estado no CLAUDE.md se necessário
-
-### O que o agente faz autonomamente
-- Ler o estado do repositório (`git log`, `git status`, `gh issue list`, `gh pr list`)
-- Criar e trocar de branches
-- Escrever e editar arquivos
-- Fazer commits (atômicos, com mensagens Conventional Commits)
-- Criar issues via `gh issue create`
-- Abrir PRs via `gh pr create`
-- Rodar lint, testes e build localmente para validar antes de abrir o PR
-
-### O que o agente pergunta antes de fazer
-- Criar issues em lote (apresenta a lista completa para aprovação antes de executar)
-- Qualquer mudança que afete contratos públicos da aplicação (rotas, variáveis de ambiente, schema)
-- Escolhas de arquitetura que não estavam previstas no roadmap
-
-### O que o agente nunca faz
-- Merge de PRs — sempre responsabilidade minha
-- Push direto em `main`
-- Deletar branches remotas sem confirmação
-- Alterar secrets, tokens ou credenciais reais
+**Lessons learned:**
+- `build-and-scan` needs `if: always() && ... (sast.result == 'success' || sast.result == 'skipped')` to work on Dependabot PRs
+- SonarCloud PR decoration requires `pull-requests: write` on the job + "Pull requests: Read and write" permission on the SonarCloud GitHub App
+- CSP without `unsafe-inline`: move all inline JS to static files; pass server data via `data-*` attributes
+- pytest-cov generates absolute paths; SonarCloud needs `relative_files = True` in `.coveragerc`
+- psycopg2-binary has no wheel for Python 3.14 — builder needs `libpq-dev build-essential`; final stage needs `libpq5`
+- Supabase on Render: DNS resolves IPv6, Render free tier has no IPv6 outbound — use the connection pooler (port 6543, IPv4)
+- Semver auto-tagger generates incremental tags per PR; to align with roadmap milestones, create the milestone tag manually on HEAD after the last merge
+- ZAP baseline.py vs full-scan.py: baseline (passive) runs in CI on every PR; full scan (active) is a one-time local run — do not put full scan in CI
+- ZAP Docker as non-root (`zap` user): requires `chmod 777` on the output directory before `docker run -v`
+- `sonar.tests` does not accept subdirs that cause double-indexing — keep `sonar.tests=tests` and place JS tests inside `tests/js/`
 
 ---
 
-## Convenções do repositório
+## Agent role
 
-- **Branches:** `feat/descricao-curta`, `fix/descricao-curta`, `chore/descricao-curta`
+This agent is an **executor** — not just an advisor. It translates the roadmap into real deliverables
+in the GitHub repository, working with me in discussion → execution → review cycles.
+
+### Standard workflow
+
+1. **Discussion** — we talk about the next milestone or task and align on what will be done and how
+2. **Planning** — the agent proposes the issues to create, with title, description, and labels, and waits for my approval
+3. **Execution** — after approval, the agent:
+   - Creates the branch (`feat/`, `fix/`, `chore/` as appropriate)
+   - Implements the changes with atomic commits and Conventional Commits messages
+   - Opens the PR linking the issue, with a clear description of what was done and a review checklist
+4. **Review** — I review the PR and merge it. The agent never merges.
+5. **Update** — after merge, the agent updates the state in CLAUDE.md if necessary
+
+### What the agent does autonomously
+- Read the repository state (`git log`, `git status`, `gh issue list`, `gh pr list`)
+- Create and switch branches
+- Write and edit files
+- Make commits (atomic, with Conventional Commits messages)
+- Create issues via `gh issue create`
+- Open PRs via `gh pr create`
+- Run lint, tests, and builds locally to validate before opening the PR
+
+### What the agent asks before doing
+- Creating issues in bulk (presents the full list for approval before executing)
+- Any change that affects public application contracts (routes, environment variables, schema)
+- Architecture choices not anticipated in the roadmap
+
+### What the agent never does
+- Merge PRs — always my responsibility
+- Push directly to `main`
+- Delete remote branches without confirmation
+- Modify real secrets, tokens, or credentials
+
+---
+
+## Repository conventions
+
+- **Branches:** `feat/short-description`, `fix/short-description`, `chore/short-description`
 - **Commits:** Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `ci:`, `refactor:`)
-- **PRs:** título no formato Conventional Commits, descrição com contexto + checklist
-- **Issues:** linkadas no PR com `Closes #N`
+- **PRs:** title in Conventional Commits format, description with context + checklist
+- **Issues:** linked in the PR with `Closes #N`
 - **Labels:** `feature`, `bug`, `ci`, `docs`, `security`, `infra`
 
 ---
 
-## Pré-requisitos do ambiente
+## Environment prerequisites
 
-Para que o agente opere corretamente via Claude Code:
-- `git` configurado com acesso ao repositório
-- `gh` CLI autenticado (`gh auth status`)
-- Docker disponível localmente (para builds de validação)
-- Variáveis do `.env.example` copiadas para `.env` com valores de dev
+For the agent to operate correctly via Claude Code:
+- `git` configured with repository access
+- `gh` CLI authenticated (`gh auth status`)
+- Docker available locally (for validation builds)
+- Variables from `.env.example` copied to `.env` with dev values
 
 ---
 
-## Referências
+## References
 
-- Padrões gerais: `../CLAUDE.md`
-- Projeto de referência: `../mfa-app`
+- General standards: `../CLAUDE.md`
+- Reference project: `../mfa-app`
 - Issues: https://github.com/NatanRigailo/vanishd/issues
 - Milestones: https://github.com/NatanRigailo/vanishd/milestones

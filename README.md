@@ -5,17 +5,17 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=NatanRigailo_vanishd&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=NatanRigailo_vanishd)
 [![GitHub release](https://img.shields.io/github/v/release/NatanRigailo/vanishd)](https://github.com/NatanRigailo/vanishd/releases)
 
-Compartilhamento de secrets zero-knowledge com links de uso único — o servidor nunca acessa o plaintext.
+Zero-knowledge secret sharing with one-time links — the server never sees the plaintext.
 
-## Como funciona
+## How it works
 
-1. Remetente digita o secret no navegador
-2. O navegador cifra localmente (AES-256-GCM) e envia apenas o ciphertext ao servidor
-3. Um link único é gerado — a chave de decifração fica no `#fragment` da URL, invisível ao servidor
-4. Destinatário abre o link — o navegador decifra localmente e exibe o conteúdo
-5. O servidor deleta o registro na primeira leitura — o link nunca funciona duas vezes
+1. Sender types the secret in the browser
+2. The browser encrypts it locally (AES-256-GCM) and sends only the ciphertext to the server
+3. A one-time link is generated — the decryption key lives in the URL `#fragment`, invisible to the server
+4. Recipient opens the link — the browser decrypts locally and displays the content
+5. The server deletes the record on first read — the link never works twice
 
-Existe também um modo senha: o remetente define uma senha que o destinatário precisa digitar (PBKDF2 deriva a chave AES no browser).
+There is also a password mode: the sender defines a password that the recipient must type (PBKDF2 derives the AES key in the browser).
 
 ## Quick start
 
@@ -27,42 +27,42 @@ docker run -d \
   ghcr.io/natanrigailo/vanishd:latest
 ```
 
-Acesse `http://localhost:8080`.
+Open `http://localhost:8080`.
 
-## Variáveis de ambiente
+## Environment variables
 
-| Variável | Padrão | Descrição |
+| Variable | Default | Description |
 |---|---|---|
-| `SECRET_KEY` | gerado em runtime | Chave Flask — defina explicitamente em produção |
-| `LOG_LEVEL` | `INFO` | Nível de log (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
-| `MAX_TTL_SECONDS` | `604800` | TTL máximo permitido (7 dias) |
-| `RATE_LIMIT_PER_MINUTE` | `20` | Requests por minuto por IP no endpoint de leitura |
-| `CLEANUP_INTERVAL_SECONDS` | `3600` | Intervalo do job de limpeza de secrets expirados |
-| `DATABASE_PATH` | `/data/vanishd.db` | Caminho do arquivo SQLite |
+| `SECRET_KEY` | generated at runtime | Flask secret key — set explicitly in production |
+| `LOG_LEVEL` | `INFO` | Log level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+| `MAX_TTL_SECONDS` | `604800` | Maximum allowed TTL (7 days) |
+| `RATE_LIMIT_PER_MINUTE` | `20` | Requests per minute per IP on the read endpoint |
+| `CLEANUP_INTERVAL_SECONDS` | `3600` | Interval for the expired secrets cleanup job |
+| `DATABASE_PATH` | `/data/vanishd.db` | SQLite file path |
 
-## Desenvolvimento local
+## Local development
 
 ```bash
 git clone https://github.com/NatanRigailo/vanishd.git
 cd vanishd
 cp .env.example .env
-make up       # build + sobe na porta 8080
-make logs     # acompanhar logs
-make down     # parar
+make up       # build + start on port 8080
+make logs     # follow logs
+make down     # stop
 ```
 
 ## Roadmap
 
-### v0.1 — Fundação ✅
-- [x] Estrutura do projeto, Dockerfile multi-stage non-root
-- [x] Flask app skeleton com `/healthz` e logging estruturado
+### v0.1 — Foundation ✅
+- [x] Project structure, multi-stage non-root Dockerfile
+- [x] Flask app skeleton with `/healthz` and structured logging
 - [x] SQLite schema
 
 ### v0.2 — Core Feature ✅
 - [x] Client-side AES-256-GCM via Web Crypto API
-- [x] `POST /api/secrets` e `GET /api/secrets/:id` com delete atômico
-- [x] Modo link (chave no `#fragment`) e modo senha (PBKDF2)
-- [x] UI mínima de criação e leitura
+- [x] `POST /api/secrets` and `GET /api/secrets/:id` with atomic delete
+- [x] Link mode (key in `#fragment`) and password mode (PBKDF2)
+- [x] Minimal create and view UI
 
 ### v0.3 — CI Pipeline ✅
 - [x] Lint (flake8 + hadolint), SAST (bandit), Build + Trivy scan
@@ -70,16 +70,16 @@ make down     # parar
 - [x] Dependabot (pip, Docker, Actions)
 
 ### v0.4 — Security Hardening ✅
-- [x] Rate limiting por IP no endpoint de leitura
-- [x] Secure HTTP headers + CSP sem `unsafe-inline`
-- [x] Cleanup job para secrets expirados
-- [x] Logging de acessos sem expor conteúdo sensível
+- [x] Per-IP rate limiting on the read endpoint
+- [x] Secure HTTP headers + CSP without `unsafe-inline`
+- [x] Cleanup job for expired secrets
+- [x] Access logging without exposing sensitive content
 
 ### v0.5 — Release & Deploy ✅
-- [x] Auto-tag semver por Conventional Commits
-- [x] Publish automático para GHCR
-- [x] Deploy automático no Render via deploy hook
-- [x] README com badges, quick start e roadmap
+- [x] Semver auto-tagging via Conventional Commits
+- [x] Automatic publish to GHCR
+- [x] Automatic deploy to Render via deploy hook
+- [x] README with badges, quick start, and roadmap
 
 ## Contributing
 
