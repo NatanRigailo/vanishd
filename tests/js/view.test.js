@@ -3,6 +3,15 @@ import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 const MOCK_SECRET_ID = 'abc123';
 const MOCK_KEY_B64 = 'c29tZWtleQ==';
 
+const PT_STRINGS = {
+  js_not_found: 'Secret não encontrado ou já foi lido.',
+  js_not_found_expired: 'Secret não encontrado, expirado ou já foi lido.',
+  js_decrypt_failed: 'Falha ao decifrar o secret. O link pode estar corrompido.',
+  js_not_pwd_mode: 'Este secret não usa modo senha.',
+  js_wrong_pwd: 'Senha incorreta ou dados corrompidos.',
+  js_enter_pwd: 'Digite a senha.',
+};
+
 function setupDOM() {
   document.body.innerHTML = `
     <div id="app" data-secret-id="${MOCK_SECRET_ID}"></div>
@@ -17,6 +26,7 @@ function setupDOM() {
     <div id="secret-content"></div>
     <p id="error-msg"></p>
   `;
+  document.body.dataset.i18n = JSON.stringify(PT_STRINGS);
 }
 
 function isVisible(id) {

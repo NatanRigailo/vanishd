@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Ver secret — Vanishd{% endblock %}
+{% block title %}{{ t.page_title_view }}{% endblock %}
 
 {% block content %}
 <div class="card">
@@ -8,42 +8,41 @@
 
   <div id="loading" class="hidden">
     <div class="spinner"></div>
-    <p class="text-muted" style="text-align:center">Decifrando...</p>
+    <p class="text-muted" style="text-align:center">{{ t.msg_decrypting }}</p>
   </div>
 
   <div id="confirm-section">
-    <div class="badge badge-warning">Uso único</div>
+    <div class="badge badge-warning">{{ t.badge_one_time }}</div>
     <p class="text-muted" style="margin-top:1rem;margin-bottom:1.5rem">
-      Este secret será <strong>destruído permanentemente</strong> ao ser revelado.
-      Certifique-se de estar em um ambiente confiável antes de continuar.
+      {{ t.msg_confirm | safe }}
     </p>
-    <button class="btn" id="reveal-btn" type="button">Revelar secret</button>
+    <button class="btn" id="reveal-btn" type="button">{{ t.btn_reveal }}</button>
   </div>
 
   <div id="password-section" class="hidden">
     <p class="text-muted" style="margin-bottom:1rem">
-      Este secret foi protegido com senha. Digite a senha para decifrar.
+      {{ t.msg_pwd_mode }}
     </p>
     <p class="text-muted mt-1" style="margin-bottom:1.25rem">
-      ⚠️ O link será consumido ao tentar decifrar. Certifique-se de ter a senha correta.
+      {{ t.msg_pwd_warning }}
     </p>
     <div class="field">
-      <label for="password">Senha</label>
-      <input type="password" id="password" placeholder="Digite a senha...">
+      <label for="password">{{ t.label_pwd }}</label>
+      <input type="password" id="password" placeholder="{{ t.placeholder_pwd_view }}">
     </div>
-    <button class="btn" id="decrypt-btn" type="button">Decifrar</button>
+    <button class="btn" id="decrypt-btn" type="button">{{ t.btn_decrypt }}</button>
   </div>
 
   <div id="success-section" class="hidden">
-    <div class="badge badge-success">Secret decifrado</div>
+    <div class="badge badge-success">{{ t.badge_decrypted }}</div>
     <div class="secret-box" id="secret-content"></div>
-    <p class="text-muted mt-2">Este link foi consumido e não funcionará novamente.</p>
+    <p class="text-muted mt-2">{{ t.msg_consumed }}</p>
   </div>
 
   <div id="error-section" class="hidden">
-    <div class="badge badge-danger">Erro</div>
+    <div class="badge badge-danger">{{ t.badge_error }}</div>
     <p id="error-msg" style="margin-top:0.5rem"></p>
-    <p class="text-muted mt-1">O link pode ter expirado, já ter sido lido, ou a senha pode estar incorreta.</p>
+    <p class="text-muted mt-1">{{ t.js_not_found }}</p>
   </div>
 
 </div>

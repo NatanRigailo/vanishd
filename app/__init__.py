@@ -1,7 +1,7 @@
 import logging
 import os
 
-from flask import Flask
+from flask import Flask, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
@@ -37,8 +37,22 @@ def create_app():
     app.register_blueprint(bp)
 
     app.after_request(_set_security_headers)
+    app.after_request(_set_lang_cookie)
+
+    from app.i18n import get_locale, get_t
+
+    @app.context_processor
+    def inject_i18n():
+        return {'t': get_t(), 'lang': get_locale()}
 
     return app
+
+
+def _set_lang_cookie(response):
+    lang = request.args.get('lang')
+    if lang in ('en', 'pt-BR'):
+        response.set_cookie('lang', lang, max_age=60 * 60 * 24 * 365, samesite='Lax')
+    return response
 
 
 def _set_security_headers(response):

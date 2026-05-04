@@ -53,6 +53,22 @@ header { text-align: center; margin-bottom: 2.5rem; }
   margin-top: 0.4rem;
 }
 
+.lang-btn {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.1rem 0.45rem;
+  margin-top: 0.6rem;
+  transition: color 0.15s, border-color 0.15s;
+}
+.lang-btn:hover { color: var(--text); border-color: var(--border-2); }
+
 main { width: 100%; max-width: 540px; }
 
 .card {

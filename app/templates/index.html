@@ -1,51 +1,51 @@
 {% extends "base.html" %}
-{% block title %}Criar secret — Vanishd{% endblock %}
+{% block title %}{{ t.page_title_create }}{% endblock %}
 
 {% block content %}
 <div class="card">
   <div class="field">
-    <label for="secret">Seu secret</label>
-    <textarea id="secret" placeholder="Cole aqui a senha, token, mensagem ou qualquer dado sensível..."></textarea>
+    <label for="secret">{{ t.label_secret }}</label>
+    <textarea id="secret" placeholder="{{ t.placeholder_secret }}"></textarea>
   </div>
 
   <div class="row">
     <div class="field">
-      <label for="ttl">Expira em</label>
+      <label for="ttl">{{ t.label_expires }}</label>
       <select id="ttl">
-        <option value="3600">1 hora</option>
-        <option value="86400" selected>24 horas</option>
-        <option value="259200">3 dias</option>
-        <option value="604800">7 dias</option>
+        <option value="3600">{{ t.opt_1h }}</option>
+        <option value="86400" selected>{{ t.opt_24h }}</option>
+        <option value="259200">{{ t.opt_3d }}</option>
+        <option value="604800">{{ t.opt_7d }}</option>
       </select>
     </div>
     <fieldset class="field">
-      <legend>Modo</legend>
+      <legend>{{ t.label_mode }}</legend>
       <div class="mode-toggle">
         <button class="mode-btn active" data-mode="link" type="button">Link</button>
-        <button class="mode-btn" data-mode="password" type="button">Senha</button>
+        <button class="mode-btn" data-mode="password" type="button">{{ t.mode_pwd_btn }}</button>
       </div>
     </fieldset>
   </div>
 
   <div id="password-field" class="field hidden">
-    <label for="password">Senha</label>
-    <input type="password" id="password" placeholder="Senha que o destinatário vai digitar">
+    <label for="password">{{ t.label_pwd }}</label>
+    <input type="password" id="password" placeholder="{{ t.placeholder_pwd_create }}">
   </div>
 
-  <button class="btn" id="submit-btn" type="button">Criar link seguro</button>
+  <button class="btn" id="submit-btn" type="button">{{ t.btn_create }}</button>
 
   <div class="result" id="result">
-    <div class="badge badge-success">Link criado</div>
+    <div class="badge badge-success">{{ t.badge_link_created }}</div>
     <div class="result-url" id="result-url"></div>
-    <button class="btn btn-outline" id="copy-btn" type="button">Copiar link</button>
-    <p class="text-muted mt-1">Este link funciona uma única vez. Compartilhe apenas com o destinatário.</p>
+    <button class="btn btn-outline" id="copy-btn" type="button">{{ t.btn_copy }}</button>
+    <p class="text-muted mt-1">{{ t.msg_one_time }}</p>
   </div>
 </div>
 
 <section id="history" class="hidden">
   <div class="history-header">
-    <span class="history-title">Histórico</span>
-    <button id="clear-history" class="btn btn-outline btn-sm" type="button">Limpar tudo</button>
+    <span class="history-title">{{ t.history_title }}</span>
+    <button id="clear-history" class="btn btn-outline btn-sm" type="button">{{ t.btn_clear_history }}</button>
   </div>
   <ul id="history-list"></ul>
 </section>

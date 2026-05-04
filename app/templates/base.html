@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="{{ lang }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,15 +8,17 @@
   <link rel="stylesheet" href="/static/fonts.css">
   <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
+<body data-i18n="{{ t | tojson }}">
   <header>
     <a href="/" class="logo">vanish<em>d</em></a>
     <p class="tagline">zero-knowledge &middot; one-time &middot; self-hosted</p>
+    <a href="?lang={{ t.lang_switch_target }}" class="lang-btn" data-lang="{{ t.lang_switch_target }}">{{ t.lang_label }}</a>
   </header>
   <main>
     {% block content %}{% endblock %}
   </main>
   <footer>vanishd &mdash; client-side AES-256-GCM</footer>
   {% block scripts %}{% endblock %}
+  <script src="/static/lang-switch.js"></script>
 </body>
 </html>
