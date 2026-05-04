@@ -7,9 +7,9 @@ const PT_STRINGS = {
   js_not_found: 'Secret não encontrado ou já foi lido.',
   js_not_found_expired: 'Secret não encontrado, expirado ou já foi lido.',
   js_decrypt_failed: 'Falha ao decifrar o secret. O link pode estar corrompido.',
-  js_not_password_mode: 'Este secret não usa modo senha.',
-  js_wrong_password: 'Senha incorreta ou dados corrompidos.',
-  js_enter_password: 'Digite a senha.',
+  js_not_pwd_mode: 'Este secret não usa modo senha.',
+  js_wrong_pwd: 'Senha incorreta ou dados corrompidos.',
+  js_enter_pwd: 'Digite a senha.',
 };
 
 function setupDOM() {

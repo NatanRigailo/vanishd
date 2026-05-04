@@ -18,7 +18,7 @@ const PT_STRINGS = {
   badge_active: 'Ativo',
   badge_consumed: 'Consumido',
   badge_expired: 'Expirado',
-  mode_password_label: 'Senha',
+  mode_pwd_label: 'Senha',
   btn_copy_short: 'Copiar',
   btn_copied_short: 'Copiado!',
   btn_remove: 'Remover',

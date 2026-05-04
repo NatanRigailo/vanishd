@@ -32,7 +32,7 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
       payload = { ciphertext, iv, ttl };
     } else {
       const password = document.getElementById('password').value;
-      if (!password) { alert(t.js_enter_password); btn.disabled = false; btn.textContent = t.btn_create; return; }
+      if (!password) { alert(t.js_enter_pwd); btn.disabled = false; btn.textContent = t.btn_create; return; }
       const salt = VanishCrypto.randomSalt();
       const key = await VanishCrypto.deriveKey(password, salt);
       const { ciphertext, iv } = await VanishCrypto.encrypt(secret, key);

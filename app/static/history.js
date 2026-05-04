@@ -2,8 +2,7 @@ const STORAGE_KEY = 'vanishd_history';
 const MAX_ENTRIES = 50;
 
 function getT() {
-  try { return JSON.parse(document.body.dataset.i18n) || {}; }
-  catch { return {}; }
+  return JSON.parse(document.body.dataset.i18n);
 }
 
 function _load() {
@@ -61,9 +60,9 @@ async function _checkConsumed(id) {
 function _badgeHtml(state) {
   const t = getT();
   const map = {
-    active:   ['badge-success', t.badge_active   || 'Ativo'],
-    consumed: ['badge-warning', t.badge_consumed  || 'Consumido'],
-    expired:  ['badge-danger',  t.badge_expired   || 'Expirado'],
+    active:   ['badge-success', t.badge_active],
+    consumed: ['badge-warning', t.badge_consumed],
+    expired:  ['badge-danger',  t.badge_expired],
   };
   const [cls, label] = map[state] || map.active;
   return `<span class="badge ${cls}">${label}</span>`;
@@ -74,7 +73,7 @@ function _buildEntry(entry, state) {
   const li = document.createElement('li');
   li.className = 'history-entry';
   li.dataset.id = entry.id;
-  const modeLabel = entry.mode === 'link' ? 'Link' : (t.mode_password_label || 'Senha');
+  const modeLabel = entry.mode === 'link' ? 'Link' : t.mode_pwd_label;
   li.innerHTML = `
     <div class="history-entry-meta">
       ${_badgeHtml(state)}
@@ -83,8 +82,8 @@ function _buildEntry(entry, state) {
     </div>
     <div class="history-url"></div>
     <div class="history-actions">
-      <button class="btn btn-outline btn-sm history-copy" type="button">${t.btn_copy_short || 'Copiar'}</button>
-      <button class="btn btn-outline btn-sm history-remove" type="button">${t.btn_remove || 'Remover'}</button>
+      <button class="btn btn-outline btn-sm history-copy" type="button">${t.btn_copy_short}</button>
+      <button class="btn btn-outline btn-sm history-remove" type="button">${t.btn_remove}</button>
     </div>`;
 
   li.querySelector('.history-url').textContent = entry.url;
@@ -92,8 +91,8 @@ function _buildEntry(entry, state) {
   li.querySelector('.history-copy').addEventListener('click', (e) => {
     const t2 = getT();
     navigator.clipboard.writeText(entry.url).then(() => {
-      e.target.textContent = t2.btn_copied_short || 'Copiado!';
-      setTimeout(() => { e.target.textContent = t2.btn_copy_short || 'Copiar'; }, 2000);
+      e.target.textContent = t2.btn_copied_short;
+      setTimeout(() => { e.target.textContent = t2.btn_copy_short; }, 2000);
     });
   });
 
@@ -125,7 +124,7 @@ function render() {
         if (!consumed) return;
         const badge = li.querySelector('.badge');
         const t = getT();
-        if (badge) { badge.className = 'badge badge-warning'; badge.textContent = t.badge_consumed || 'Consumido'; }
+        if (badge) { badge.className = 'badge badge-warning'; badge.textContent = t.badge_consumed; }
       });
     }
   });
