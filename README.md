@@ -7,15 +7,46 @@
 
 Zero-knowledge secret sharing with one-time links — the server never sees the plaintext.
 
+## Screenshot
+
+![vanishd create page](docs/screenshots/create.png)
+
 ## How it works
 
-1. Sender types the secret in the browser
-2. The browser encrypts it locally (AES-256-GCM) and sends only the ciphertext to the server
-3. A one-time link is generated — the decryption key lives in the URL `#fragment`, invisible to the server
-4. Recipient opens the link — the browser decrypts locally and displays the content
-5. The server deletes the record on first read — the link never works twice
+The browser encrypts the secret locally and sends only the ciphertext to the server. The decryption key never leaves the client.
 
-There is also a password mode: the sender defines a password that the recipient must type (PBKDF2 derives the AES key in the browser).
+```
+[Sender browser]                       [Server]              [Recipient browser]
+   generates AES-256-GCM key
+   encrypts the secret (AES-GCM)
+   POST /api/secrets {ciphertext} ──► stores encrypted blob
+   receives {id}                       never saw the plaintext
+   builds URL: /s/{id}#{base64(key)}
+                                                              opens the link
+                                                              extracts key from #fragment
+                                                              GET /api/secrets/{id} ──► returns + deletes
+                                                              decrypts locally with the key
+                                                              displays the secret
+                                                              (link invalid forever)
+```
+
+**Password mode (PBKDF2):** the sender sets a password; the browser derives the AES key via PBKDF2 (200k iterations, SHA-256). The link does not carry the key — the recipient types the password to decrypt. The server stores `ciphertext + salt`, never the key or plaintext.
+
+## Security model
+
+| What the server stores | What the server never sees |
+|---|---|
+| Encrypted ciphertext (AES-256-GCM) | The plaintext secret |
+| Random salt (password mode) | The AES key |
+| Secret ID and TTL | The `#fragment` of the URL |
+| Per-IP request counters | The password |
+
+**Guarantees this design provides:**
+
+- A server breach exposes only ciphertext — useless without the key
+- The one-time delete ensures the link stops working after the first read
+- The URL fragment (`#key`) is never sent to the server by browsers
+- In password mode, the key is derived entirely in the browser — the server cannot brute-force it without the ciphertext *and* the password
 
 ## Quick start
 
@@ -42,6 +73,7 @@ Open `http://localhost:8080`.
 | `MAX_CONTENT_LENGTH` | `65536` | Maximum request body size (bytes) |
 | `CLEANUP_INTERVAL_SECONDS` | `3600` | Interval for the expired secrets cleanup job |
 | `DATABASE_PATH` | `/data/vanishd.db` | SQLite file path |
+| `DATABASE_URL` | *(unset)* | PostgreSQL connection string — overrides `DATABASE_PATH` when set |
 
 ## Local development
 
@@ -53,36 +85,6 @@ make up       # build + start on port 8080
 make logs     # follow logs
 make down     # stop
 ```
-
-## Roadmap
-
-### v0.1 — Foundation ✅
-- [x] Project structure, multi-stage non-root Dockerfile
-- [x] Flask app skeleton with `/healthz` and structured logging
-- [x] SQLite schema
-
-### v0.2 — Core Feature ✅
-- [x] Client-side AES-256-GCM via Web Crypto API
-- [x] `POST /api/secrets` and `GET /api/secrets/:id` with atomic delete
-- [x] Link mode (key in `#fragment`) and password mode (PBKDF2)
-- [x] Minimal create and view UI
-
-### v0.3 — CI Pipeline ✅
-- [x] Lint (flake8 + hadolint), SAST (bandit), Build + Trivy scan
-- [x] SonarCloud quality gate
-- [x] Dependabot (pip, Docker, Actions)
-
-### v0.4 — Security Hardening ✅
-- [x] Per-IP rate limiting on the read endpoint
-- [x] Secure HTTP headers + CSP without `unsafe-inline`
-- [x] Cleanup job for expired secrets
-- [x] Access logging without exposing sensitive content
-
-### v0.5 — Release & Deploy ✅
-- [x] Semver auto-tagging via Conventional Commits
-- [x] Automatic publish to GHCR
-- [x] Automatic deploy to Render via deploy hook
-- [x] README with badges, quick start, and roadmap
 
 ## Contributing
 
