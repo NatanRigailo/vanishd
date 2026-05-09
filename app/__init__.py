@@ -1,7 +1,8 @@
 import logging
 import os
+import time
 
-from flask import Flask, request
+from flask import Flask, g, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
@@ -36,6 +37,8 @@ def create_app():
     from app.routes import bp
     app.register_blueprint(bp)
 
+    app.before_request(_start_timer)
+    app.after_request(_record_request_duration)
     app.after_request(_set_security_headers)
     app.after_request(_set_lang_cookie)
 
@@ -46,6 +49,20 @@ def create_app():
         return {'t': get_t(), 'lang': get_locale()}
 
     return app
+
+
+def _start_timer():
+    g.start_time = time.time()
+
+
+def _record_request_duration(response):
+    if hasattr(g, "start_time") and request.endpoint != "main.metrics":
+        from app.metrics import request_duration
+        route = str(request.url_rule) if request.url_rule else "unknown"
+        request_duration.labels(route=route, method=request.method).observe(
+            time.time() - g.start_time
+        )
+    return response
 
 
 def _set_lang_cookie(response):

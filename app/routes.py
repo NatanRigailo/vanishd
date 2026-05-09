@@ -6,10 +6,12 @@ import uuid
 
 from flask import Blueprint, jsonify, render_template, request
 from flask_limiter.errors import RateLimitExceeded
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from app import limiter
 from app.db import get_db, ping_db
 from app.i18n import get_t
+from app.metrics import secrets_created, secrets_not_found, secrets_read
 
 log = logging.getLogger(__name__)
 bp = Blueprint("main", __name__)
@@ -56,6 +58,11 @@ def handle_server_error(e):
     if _wants_json():
         return jsonify({"error": "internal server error"}), 500
     return _error_page(500, get_t()["err_server"])
+
+
+@bp.route("/metrics", methods=["GET"])
+def metrics():
+    return generate_latest(), 200, {"Content-Type": CONTENT_TYPE_LATEST}
 
 
 @bp.route("/healthz", methods=["GET"])
@@ -116,6 +123,7 @@ def create_secret():
     finally:
         conn.close()
 
+    secrets_created.inc()
     log.info("secret_created id=%s ttl=%d", secret_id, ttl)
     return jsonify({"id": secret_id}), 201
 
@@ -149,10 +157,12 @@ def read_secret(secret_id):
         conn.close()
 
     if row is None:
+        secrets_not_found.inc()
         log.warning(
             "secret_not_found id=%s ip=%s", _sanitize(secret_id), _sanitize(request.remote_addr)
         )
         return jsonify({"error": "secret not found or expired"}), 404
 
+    secrets_read.inc()
     log.info("secret_read id=%s ip=%s", _sanitize(secret_id), _sanitize(request.remote_addr))
     return jsonify({"ciphertext": row["ciphertext"], "iv": row["iv"], "salt": row["salt"]})

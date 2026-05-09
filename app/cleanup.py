@@ -4,6 +4,7 @@ import threading
 import time
 
 from app.db import get_db
+from app.metrics import secrets_expired
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ def cleanup_once():
         )
         conn.commit()
         if result.rowcount:
+            secrets_expired.inc(result.rowcount)
             log.info("cleanup_expired count=%d", result.rowcount)
     finally:
         conn.close()
